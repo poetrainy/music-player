@@ -1,5 +1,8 @@
+import { ClassValue, clsx } from "clsx";
 import { auth } from "@/auth";
-import { QuotaUsage } from "@/entity";
+import { QuotaUsage } from "@/features/user/entity";
+
+export const cn = (...inputs: ClassValue[]): string => clsx(inputs);
 
 const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
 

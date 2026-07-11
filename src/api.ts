@@ -1,10 +1,5 @@
-import { auth } from "@/auth";
-import { QuotaUsage, Song, User } from "@/entity";
-import {
-  fetchYoutubeApi,
-  getYoutubeQuotaUsage,
-  trimChannelTopicSuffix,
-} from "@/library";
+import { Song } from "@/entity";
+import { fetchYoutubeApi, trimChannelTopicSuffix } from "@/library";
 
 interface YoutubeVideoListResponse {
   items: {
@@ -44,19 +39,6 @@ export const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
 
   return data.items.map(toSong);
 };
-
-export const getCurrentUser = async (): Promise<User> => {
-  const session = await auth();
-
-  return {
-    name: session?.user?.name ?? "",
-    email: session?.user?.email ?? "",
-    avatarUrl: session?.user?.image ?? "",
-  };
-};
-
-export const getQuotaUsage = async (): Promise<QuotaUsage> =>
-  getYoutubeQuotaUsage();
 
 export const searchSongs = async (query: string): Promise<Song[]> => {
   if (!query.trim()) {

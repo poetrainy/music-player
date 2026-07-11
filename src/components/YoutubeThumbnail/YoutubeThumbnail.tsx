@@ -2,6 +2,7 @@
 
 import Image, { ImageProps } from "next/image";
 import { useState } from "react";
+import { cn } from "@/library";
 
 const THUMBNAIL_QUALITIES = [
   "maxresdefault",
@@ -17,7 +18,12 @@ interface Props extends Omit<ImageProps, "src" | "onError" | "onLoad"> {
   videoId: string;
 }
 
-export function YoutubeThumbnail({ videoId, alt, ...imageProps }: Props) {
+export function YoutubeThumbnail({
+  videoId,
+  alt,
+  className,
+  ...imageProps
+}: Props) {
   const [qualityIndex, setQualityIndex] = useState(0);
   const isLastFallback = qualityIndex === THUMBNAIL_QUALITIES.length - 1;
 
@@ -32,6 +38,7 @@ export function YoutubeThumbnail({ videoId, alt, ...imageProps }: Props) {
       {...imageProps}
       src={`https://i.ytimg.com/vi/${videoId}/${THUMBNAIL_QUALITIES[qualityIndex]}.jpg`}
       alt={alt}
+      className={cn(className)}
       onError={advanceFallback}
       onLoad={(event) => {
         if (

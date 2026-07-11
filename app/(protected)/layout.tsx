@@ -1,18 +1,15 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, getQuotaUsage } from "@/api";
 import { auth } from "@/auth";
 import { AppHeader } from "@/components/AppHeader/AppHeader";
-import { PlayerContentArea } from "@/features/player/components/PlayerContentArea";
-import { PlayerDrawerRestoreButton } from "@/features/player/components/PlayerDrawerRestoreButton";
+import { PlayerLayout } from "@/features/player/components/PlayerLayout";
 import { PlayerMiniPlayer } from "@/features/player/components/PlayerMiniPlayer";
 import { PlayerProvider } from "@/features/player/components/PlayerProvider";
+import { getCurrentUser, getQuotaUsage } from "@/features/user/api";
 
 export default async function ProtectedLayout({
   children,
-  drawer,
 }: Readonly<{
   children: React.ReactNode;
-  drawer: React.ReactNode;
 }>) {
   const session = await auth();
 
@@ -25,10 +22,8 @@ export default async function ProtectedLayout({
   return (
     <PlayerProvider>
       <AppHeader quota={quota} user={user} />
-      <PlayerContentArea>{children}</PlayerContentArea>
-      {drawer}
+      <PlayerLayout>{children}</PlayerLayout>
       <PlayerMiniPlayer />
-      <PlayerDrawerRestoreButton />
     </PlayerProvider>
   );
 }

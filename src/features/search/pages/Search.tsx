@@ -99,7 +99,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
           type="submit"
           disabled={isSearchPending}
           aria-label="検索"
-          className="bg-brand flex shrink-0 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-black"
+          className="bg-brand active:bg-brand/80 flex shrink-0 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-black"
         >
           {isSearchPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -136,7 +136,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                   alt={title}
                   fill
                   sizes="48px"
-                  className="object-cover"
+                  className="scale-125 object-cover"
                 />
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
@@ -159,7 +159,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                       ? "プレイリストから削除"
                       : "プレイリストに追加"
                   }
-                  className="text-brand flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
+                  className="text-brand active:text-brand/70 flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
                 >
                   {pendingSongId === id ? (
                     <Loader2 className="h-5 w-5 animate-spin" />

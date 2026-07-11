@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useEffect } from "react";
 import {
+  ArrowLeft,
+  PanelRightClose,
   Pause,
   Play,
   Repeat,
@@ -11,26 +12,12 @@ import {
   SkipBack,
   SkipForward,
 } from "lucide-react";
+import { IconButton } from "@/components/IconButton/IconButton";
 import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
-import { Song } from "@/entity";
 import { usePlayer } from "@/features/player/hook";
 import { formatPlaybackTime } from "@/features/player/library";
 
-interface Props {
-  headerEndActions: ReactNode;
-  playlistId: string;
-  playlistTitle: string;
-  song: Song;
-  songs: Song[];
-}
-
-export function SongDetailComponent({
-  headerEndActions,
-  playlistId,
-  playlistTitle,
-  song,
-  songs,
-}: Props) {
+export function SongDetailComponent() {
   const {
     currentSong,
     currentTime,
@@ -38,47 +25,66 @@ export function SongDetailComponent({
     duration,
     isPlaying,
     isShuffled,
-    play,
+    playlistId,
+    playlistTitle,
     playNext,
     playPrevious,
     repeatMode,
     seekTo,
+    setActiveMobileView,
+    songs,
     togglePlayback,
     toggleShuffle,
   } = usePlayer();
-  const displaySong = currentSong ?? song;
-  const isCurrentSongPlaying = isPlaying && !!currentSong;
   const hasAdjacentSong = songs.length > 1;
 
-  useEffect(() => {
-    play(song, playlistId, songs);
-  }, [play, playlistId, song, songs]);
+  if (!currentSong || !playlistId) {
+    return null;
+  }
 
   return (
-    <div className="from-surface-elevated to-surface text-foreground flex h-full min-h-0 flex-col bg-linear-to-b p-6">
-      <div className="flex items-center justify-end">{headerEndActions}</div>
+    <div className="text-foreground md:from-surface-elevated md:to-surface flex h-full min-h-0 flex-col md:bg-linear-to-b md:p-6">
+      <div className="mb-2 flex items-center justify-start md:hidden">
+        <Link
+          href={`/playlists/${playlistId}`}
+          aria-label="リストに戻る"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/15"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+      </div>
+      <div className="mb-2 hidden items-center justify-end md:flex">
+        <IconButton
+          type="button"
+          onClick={() => setActiveMobileView("list")}
+          aria-label="プレイヤーを閉じる"
+          className="text-zinc-400"
+        >
+          <PanelRightClose className="h-5 w-5" />
+        </IconButton>
+      </div>
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
-        <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl shadow-2xl shadow-black/60">
+        <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60">
           <YoutubeThumbnail
-            videoId={displaySong.id}
-            alt={displaySong.title}
+            videoId={currentSong.id}
+            alt={currentSong.title}
             fill
             sizes="384px"
             className="object-cover"
-            priority
+            preload
           />
         </div>
         <div className="flex flex-col items-center gap-1 text-center">
           <Link
             href={`/playlists/${playlistId}`}
-            className="text-xs font-semibold text-zinc-400"
+            className="text-xs font-semibold text-zinc-400 active:text-zinc-300"
           >
             {playlistTitle}
           </Link>
-          <p className="text-xl font-bold">{displaySong.title}</p>
-          <p className="text-sm text-zinc-400">{displaySong.artist}</p>
+          <p className="text-xl font-bold">{currentSong.title}</p>
+          <p className="text-sm text-zinc-400">{currentSong.artist}</p>
         </div>
-        <div className="flex w-full max-w-sm flex-col gap-1">
+        <div className="flex w-full flex-col gap-1">
           <input
             type="range"
             min={0}
@@ -94,47 +100,47 @@ export function SongDetailComponent({
           </div>
         </div>
         <div className="flex items-center gap-5">
-          <button
+          <IconButton
             type="button"
             onClick={toggleShuffle}
             aria-label={isShuffled ? "シャッフル: オン" : "シャッフル: オフ"}
             className={isShuffled ? "text-brand" : "text-zinc-400"}
           >
             <Shuffle className="h-5 w-5" />
-          </button>
+          </IconButton>
           {hasAdjacentSong ? (
-            <button
+            <IconButton
               type="button"
               onClick={playPrevious}
               aria-label="前の曲"
               className="text-foreground"
             >
               <SkipBack className="h-6 w-6" fill="currentColor" />
-            </button>
+            </IconButton>
           ) : null}
           <button
             type="button"
             onClick={togglePlayback}
-            aria-label={isCurrentSongPlaying ? "一時停止" : "再生"}
-            className="bg-brand flex h-16 w-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
+            aria-label={isPlaying ? "一時停止" : "再生"}
+            className="bg-brand active:bg-brand/80 flex h-16 w-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
           >
-            {isCurrentSongPlaying ? (
+            {isPlaying ? (
               <Pause className="h-7 w-7" fill="currentColor" />
             ) : (
               <Play className="ml-1 h-7 w-7" fill="currentColor" />
             )}
           </button>
           {hasAdjacentSong ? (
-            <button
+            <IconButton
               type="button"
               onClick={playNext}
               aria-label="次の曲"
               className="text-foreground"
             >
               <SkipForward className="h-6 w-6" fill="currentColor" />
-            </button>
+            </IconButton>
           ) : null}
-          <button
+          <IconButton
             type="button"
             onClick={cycleRepeatMode}
             aria-label={
@@ -151,7 +157,7 @@ export function SongDetailComponent({
             ) : (
               <Repeat className="h-5 w-5" />
             )}
-          </button>
+          </IconButton>
         </div>
       </div>
     </div>

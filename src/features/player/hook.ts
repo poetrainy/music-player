@@ -1,7 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Song } from "@/entity";
 import { getAdjacentSong } from "@/features/player/library";
 
@@ -52,7 +58,6 @@ export const PLAYER_CONTAINER_ID = "player-youtube-container";
 
 const YOUTUBE_IFRAME_API_SRC = "https://www.youtube.com/iframe_api";
 const PLAYBACK_TIME_POLLING_INTERVAL_MILLISECONDS = 500;
-const DRAWER_DISMISS_TRANSITION_MILLISECONDS = 300;
 
 let youtubeIframeApiPromise: Promise<YoutubeIframeApi> | null = null;
 
@@ -85,30 +90,33 @@ const loadYoutubeIframeApi = (): Promise<YoutubeIframeApi> => {
   return youtubeIframeApiPromise;
 };
 
-export const DRAWER_STATES = ["closed", "minimized", "open"] as const;
-export type DrawerState = (typeof DRAWER_STATES)[number];
+export const MOBILE_VIEWS = ["list", "player"] as const;
+export type MobileView = (typeof MOBILE_VIEWS)[number];
 
 export const REPEAT_MODES = ["off", "all", "one"] as const;
 export type RepeatMode = (typeof REPEAT_MODES)[number];
 
 interface PlayerContextValue {
+  activeMobileView: MobileView;
   currentSong: Song | null;
   currentTime: number;
   cycleRepeatMode: () => void;
-  drawerState: DrawerState;
   duration: number;
-  isDrawerPanelVisible: boolean;
   isPlaying: boolean;
   isShuffled: boolean;
-  maximizeDrawer: () => void;
-  minimizeDrawer: () => void;
-  play: (song: Song, playlistId: string, songs: Song[]) => void;
+  play: (
+    song: Song,
+    playlistId: string,
+    playlistTitle: string,
+    songs: Song[],
+  ) => void;
   playlistId: string | null;
+  playlistTitle: string;
   playNext: () => void;
   playPrevious: () => void;
   repeatMode: RepeatMode;
   seekTo: (seconds: number) => void;
-  setDrawerPanelVisible: (isVisible: boolean) => void;
+  setActiveMobileView: (view: MobileView) => void;
   songs: Song[];
   togglePlayback: () => void;
   toggleShuffle: () => void;
@@ -127,7 +135,6 @@ export const usePlayer = (): PlayerContextValue => {
 };
 
 export const usePlayerController = (): PlayerContextValue => {
-  const router = useRouter();
   const playerRef = useRef<YoutubePlayer | null>(null);
   const songsRef = useRef<Song[]>([]);
   const repeatModeRef = useRef<RepeatMode>("off");
@@ -135,14 +142,14 @@ export const usePlayerController = (): PlayerContextValue => {
   const goToSongOnEndRef = useRef<(song: Song) => void>(() => {});
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [playlistId, setPlaylistId] = useState<string | null>(null);
+  const [playlistTitle, setPlaylistTitle] = useState("");
   const [songs, setSongs] = useState<Song[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const [isShuffled, setIsShuffled] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [drawerState, setDrawerState] = useState<DrawerState>("closed");
-  const [isDrawerPanelVisible, setDrawerPanelVisible] = useState(false);
+  const [activeMobileView, setActiveMobileView] = useState<MobileView>("list");
 
   useEffect(() => {
     songsRef.current = songs;
@@ -156,14 +163,20 @@ export const usePlayerController = (): PlayerContextValue => {
     isShuffledRef.current = isShuffled;
   }, [isShuffled]);
 
-  const goToSong = (song: Song) => {
-    if (isDrawerPanelVisible && playlistId) {
-      router.replace(`/playlists/${playlistId}/${song.id}`);
-      return;
-    }
+  const goToSong = useCallback(
+    (song: Song) => {
+      setCurrentSong(song);
 
-    setCurrentSong(song);
-  };
+      if (playlistId) {
+        window.history.replaceState(
+          null,
+          "",
+          `/playlists/${playlistId}/${song.id}`,
+        );
+      }
+    },
+    [playlistId],
+  );
 
   useEffect(() => {
     goToSongOnEndRef.current = goToSong;
@@ -200,9 +213,8 @@ export const usePlayerController = (): PlayerContextValue => {
             setIsPlaying(true);
           },
           onStateChange: (event) => {
-            setIsPlaying(event.data === YT.PlayerState.PLAYING);
-
             if (event.data !== YT.PlayerState.ENDED) {
+              setIsPlaying(event.data === YT.PlayerState.PLAYING);
               return;
             }
 
@@ -223,6 +235,7 @@ export const usePlayerController = (): PlayerContextValue => {
               !isShuffledRef.current &&
               isLastSong
             ) {
+              setIsPlaying(false);
               return;
             }
 
@@ -235,6 +248,8 @@ export const usePlayerController = (): PlayerContextValue => {
 
             if (nextSong) {
               goToSongOnEndRef.current(nextSong);
+            } else {
+              setIsPlaying(false);
             }
           },
         },
@@ -269,14 +284,30 @@ export const usePlayerController = (): PlayerContextValue => {
     };
   }, [currentSong, isPlaying]);
 
-  const play = (song: Song, nextPlaylistId: string, nextSongs: Song[]) => {
-    setDrawerState("open");
-    setPlaylistId(nextPlaylistId);
-    setSongs(nextSongs);
-    setCurrentSong((previous) => (previous?.id === song.id ? previous : song));
-  };
+  const play = useCallback(
+    (
+      song: Song,
+      nextPlaylistId: string,
+      nextPlaylistTitle: string,
+      nextSongs: Song[],
+    ) => {
+      setPlaylistId(nextPlaylistId);
+      setPlaylistTitle(nextPlaylistTitle);
+      setSongs(nextSongs);
+      setCurrentSong((previous) =>
+        previous?.id === song.id ? previous : song,
+      );
+      setActiveMobileView("player");
+      window.history.replaceState(
+        null,
+        "",
+        `/playlists/${nextPlaylistId}/${song.id}`,
+      );
+    },
+    [],
+  );
 
-  const playNext = () => {
+  const playNext = useCallback(() => {
     const queue = songsRef.current;
 
     if (!currentSong || queue.length === 0) {
@@ -288,9 +319,9 @@ export const usePlayerController = (): PlayerContextValue => {
     if (nextSong) {
       goToSong(nextSong);
     }
-  };
+  }, [currentSong, goToSong, isShuffled]);
 
-  const playPrevious = () => {
+  const playPrevious = useCallback(() => {
     const queue = songsRef.current;
 
     if (!currentSong || queue.length === 0) {
@@ -302,9 +333,9 @@ export const usePlayerController = (): PlayerContextValue => {
     if (previousSong) {
       goToSong(previousSong);
     }
-  };
+  }, [currentSong, goToSong, isShuffled]);
 
-  const togglePlayback = () => {
+  const togglePlayback = useCallback(() => {
     if (!playerRef.current) {
       return;
     }
@@ -314,9 +345,9 @@ export const usePlayerController = (): PlayerContextValue => {
     } else {
       playerRef.current.playVideo();
     }
-  };
+  }, [isPlaying]);
 
-  const cycleRepeatMode = () => {
+  const cycleRepeatMode = useCallback(() => {
     setRepeatMode((previous) => {
       if (previous === "off") {
         return "all";
@@ -328,59 +359,37 @@ export const usePlayerController = (): PlayerContextValue => {
 
       return "off";
     });
-  };
+  }, []);
 
-  const toggleShuffle = () => {
+  const toggleShuffle = useCallback(() => {
     setIsShuffled((previous) => !previous);
-  };
+  }, []);
 
-  const seekTo = (seconds: number) => {
+  const seekTo = useCallback((seconds: number) => {
     if (!playerRef.current) {
       return;
     }
 
     playerRef.current.seekTo(seconds, true);
     setCurrentTime(seconds);
-  };
-
-  const minimizeDrawer = () => {
-    setDrawerPanelVisible(false);
-    setTimeout(() => {
-      setDrawerState("minimized");
-
-      if (playlistId) {
-        router.replace(`/playlists/${playlistId}`);
-      }
-    }, DRAWER_DISMISS_TRANSITION_MILLISECONDS);
-  };
-
-  const maximizeDrawer = () => {
-    if (!currentSong || !playlistId) {
-      return;
-    }
-
-    router.push(`/playlists/${playlistId}/${currentSong.id}`);
-    setDrawerState("open");
-  };
+  }, []);
 
   return {
+    activeMobileView,
     currentSong,
     currentTime,
     cycleRepeatMode,
-    drawerState,
     duration,
-    isDrawerPanelVisible,
     isPlaying,
     isShuffled,
-    maximizeDrawer,
-    minimizeDrawer,
     play,
     playlistId,
+    playlistTitle,
     playNext,
     playPrevious,
     repeatMode,
     seekTo,
-    setDrawerPanelVisible,
+    setActiveMobileView,
     songs,
     togglePlayback,
     toggleShuffle,

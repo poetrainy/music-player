@@ -14,7 +14,7 @@ export function SignInComponent() {
       <form action={loginWithGoogle}>
         <button
           type="submit"
-          className="flex items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black"
+          className="flex items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black active:bg-zinc-300"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5">
             <path

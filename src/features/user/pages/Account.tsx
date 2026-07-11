@@ -1,8 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { QuotaUsage, User } from "@/entity";
 import { logout } from "@/features/auth/api";
+import { QuotaUsage, User } from "@/features/user/entity";
 
 interface Props {
   quota: QuotaUsage;
@@ -23,14 +21,7 @@ export function AccountComponent({ quota, user }: Props) {
   }).format(new Date(quota.resetAt));
 
   return (
-    <div className="flex min-h-dvh flex-col gap-8 p-6">
-      <Link
-        href="/"
-        className="flex items-center gap-1 self-start text-sm text-zinc-400"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        戻る
-      </Link>
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col gap-8 p-6">
       <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
         <div className="relative h-28 w-28 overflow-hidden rounded-full shadow-lg shadow-black/40">
           <Image
@@ -45,7 +36,7 @@ export function AccountComponent({ quota, user }: Props) {
           <p className="text-foreground text-xl font-bold">{user.name}</p>
           <p className="text-sm text-zinc-400">{user.email}</p>
         </div>
-        <div className="flex w-full max-w-sm flex-col gap-2 text-left">
+        <div className="flex w-full max-w-sm flex-col gap-2 text-left pt-6">
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>APIリクエスト使用量</span>
             <span>
@@ -62,10 +53,10 @@ export function AccountComponent({ quota, user }: Props) {
           <p className="text-xs text-zinc-500">{resetAtLabel} にリセット</p>
         </div>
       </div>
-      <form action={logout}>
+      <form action={logout} className="flex justify-center">
         <button
           type="submit"
-          className="text-foreground hover:bg-surface-elevated w-full rounded-full border border-white/10 py-3 text-sm font-semibold"
+          className="text-foreground hover:bg-surface-elevated active:bg-surface-elevated/70 rounded-full border border-white/10 px-8 py-3 text-sm font-semibold"
         >
           ログアウト
         </button>

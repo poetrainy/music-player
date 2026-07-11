@@ -17,7 +17,7 @@ export async function PlaylistDetailComponent({ playlistId }: Props) {
 
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <div className="flex flex-col items-center gap-4 px-6 pt-6 text-center">
+      <div className="flex flex-col items-center gap-4 pt-6 text-center">
         <div className="w-48">
           <PlaylistThumbnailCollage songs={playlist.songs} size="lg" />
         </div>
@@ -28,11 +28,17 @@ export async function PlaylistDetailComponent({ playlistId }: Props) {
           </h1>
           <p className="text-sm text-zinc-400">{playlist.songs.length}曲</p>
         </div>
-        <PlaylistPlayButton playlistId={playlistId} songs={playlist.songs} />
+        <PlaylistPlayButton
+          playlistId={playlistId}
+          playlistTitle={playlist.title}
+          songs={playlist.songs}
+        />
       </div>
-      <div className="px-4">
-        <SongList playlistId={playlistId} songs={playlist.songs} />
-      </div>
+      <SongList
+        playlistId={playlistId}
+        playlistTitle={playlist.title}
+        songs={playlist.songs}
+      />
     </div>
   );
 }
