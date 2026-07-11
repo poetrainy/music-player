@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import {
-  ChevronLeft,
   Pause,
   Play,
   Repeat,
+  Repeat1,
   Shuffle,
   SkipBack,
   SkipForward,
@@ -32,19 +31,18 @@ export function SongDetailComponent({
   song,
   songs,
 }: Props) {
-  const router = useRouter();
   const {
     currentSong,
     currentTime,
+    cycleRepeatMode,
     duration,
-    isLooping,
     isPlaying,
     isShuffled,
     play,
     playNext,
     playPrevious,
+    repeatMode,
     seekTo,
-    toggleLoop,
     togglePlayback,
     toggleShuffle,
   } = usePlayer();
@@ -58,17 +56,7 @@ export function SongDetailComponent({
 
   return (
     <div className="from-surface-elevated to-surface text-foreground flex h-full min-h-0 flex-col bg-linear-to-b p-6">
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-zinc-400"
-        >
-          <ChevronLeft className="h-5 w-5" />
-          戻る
-        </button>
-        {headerEndActions}
-      </div>
+      <div className="flex items-center justify-end">{headerEndActions}</div>
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
         <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-xl shadow-2xl shadow-black/60">
           <YoutubeThumbnail
@@ -97,6 +85,7 @@ export function SongDetailComponent({
             max={duration || 0}
             value={currentTime}
             onChange={(event) => seekTo(Number(event.target.value))}
+            aria-label="再生位置"
             className="accent-brand w-full"
           />
           <div className="flex justify-between text-xs text-zinc-400">
@@ -108,6 +97,7 @@ export function SongDetailComponent({
           <button
             type="button"
             onClick={toggleShuffle}
+            aria-label={isShuffled ? "シャッフル: オン" : "シャッフル: オフ"}
             className={isShuffled ? "text-brand" : "text-zinc-400"}
           >
             <Shuffle className="h-5 w-5" />
@@ -116,6 +106,7 @@ export function SongDetailComponent({
             <button
               type="button"
               onClick={playPrevious}
+              aria-label="前の曲"
               className="text-foreground"
             >
               <SkipBack className="h-6 w-6" fill="currentColor" />
@@ -124,6 +115,7 @@ export function SongDetailComponent({
           <button
             type="button"
             onClick={togglePlayback}
+            aria-label={isCurrentSongPlaying ? "一時停止" : "再生"}
             className="bg-brand flex h-16 w-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
           >
             {isCurrentSongPlaying ? (
@@ -136,6 +128,7 @@ export function SongDetailComponent({
             <button
               type="button"
               onClick={playNext}
+              aria-label="次の曲"
               className="text-foreground"
             >
               <SkipForward className="h-6 w-6" fill="currentColor" />
@@ -143,10 +136,21 @@ export function SongDetailComponent({
           ) : null}
           <button
             type="button"
-            onClick={toggleLoop}
-            className={isLooping ? "text-brand" : "text-zinc-400"}
+            onClick={cycleRepeatMode}
+            aria-label={
+              repeatMode === "off"
+                ? "リピート: オフ"
+                : repeatMode === "all"
+                  ? "リピート: 全曲"
+                  : "リピート: 1曲"
+            }
+            className={repeatMode === "off" ? "text-zinc-400" : "text-brand"}
           >
-            <Repeat className="h-5 w-5" />
+            {repeatMode === "one" ? (
+              <Repeat1 className="h-5 w-5" />
+            ) : (
+              <Repeat className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>

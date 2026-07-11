@@ -15,6 +15,7 @@
 - Prettier
 - prettier-plugin-tailwindcss
 - @trivago/prettier-plugin-sort-imports
+- Lucide Icons
 
 ## フォーマットルール
 

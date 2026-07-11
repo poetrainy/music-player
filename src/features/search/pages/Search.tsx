@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
-import { Check, ChevronLeft, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
 import { Song } from "@/entity";
 import {
@@ -87,24 +86,19 @@ export function SearchComponent({ playlists, query, songs }: Props) {
 
   return (
     <div className="flex flex-col gap-6 p-4 pt-6">
-      <Link
-        href="/"
-        className="flex items-center gap-1 self-start text-sm text-zinc-400"
-      >
-        <ChevronLeft className="h-5 w-5" />
-        戻る
-      </Link>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
           name="q"
           defaultValue={query}
           placeholder="曲やアーティストを検索"
+          aria-label="曲やアーティストを検索"
           className="bg-surface-elevated text-foreground w-full rounded-full px-4 py-2 text-sm outline-none"
         />
         <button
           type="submit"
           disabled={isSearchPending}
+          aria-label="検索"
           className="bg-brand flex shrink-0 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-black"
         >
           {isSearchPending ? (
@@ -118,6 +112,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
         <select
           value={selectedPlaylistId}
           onChange={(event) => setSelectedPlaylistId(event.target.value)}
+          aria-label="プレイリストを選択"
           className="bg-surface-elevated text-foreground w-full rounded-md px-3 py-2 text-sm"
         >
           {playlists.map(({ id, title }) => (
@@ -159,6 +154,11 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                       : handleAddSong(id)
                   }
                   disabled={pendingSongId === id}
+                  aria-label={
+                    playlistItemIdsBySongId[id]
+                      ? "プレイリストから削除"
+                      : "プレイリストに追加"
+                  }
                   className="text-brand flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
                 >
                   {pendingSongId === id ? (

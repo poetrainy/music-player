@@ -1,6 +1,11 @@
 import { auth } from "@/auth";
 import { QuotaUsage } from "@/entity";
 
+const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
+
+export const trimChannelTopicSuffix = (channelTitle: string): string =>
+  channelTitle.replace(CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN, "");
+
 const YOUTUBE_API_BASE_URL = "https://www.googleapis.com/youtube/v3";
 const YOUTUBE_DAILY_QUOTA_UNITS = 10_000;
 const YOUTUBE_API_CALL_COST_UNITS = 1;

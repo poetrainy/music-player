@@ -22,6 +22,7 @@ export function PlaylistPlayButton({ playlistId, songs }: Props) {
     <Link
       href={`/playlists/${playlistId}/${firstSong.id}`}
       onClick={() => play(firstSong, playlistId, songs)}
+      aria-label="再生"
       className="bg-brand flex h-14 w-14 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
     >
       <Play className="ml-1 h-6 w-6" fill="currentColor" />

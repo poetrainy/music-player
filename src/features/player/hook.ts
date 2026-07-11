@@ -88,14 +88,16 @@ const loadYoutubeIframeApi = (): Promise<YoutubeIframeApi> => {
 export const DRAWER_STATES = ["closed", "minimized", "open"] as const;
 export type DrawerState = (typeof DRAWER_STATES)[number];
 
+export const REPEAT_MODES = ["off", "all", "one"] as const;
+export type RepeatMode = (typeof REPEAT_MODES)[number];
+
 interface PlayerContextValue {
-  closeDrawer: () => void;
   currentSong: Song | null;
   currentTime: number;
+  cycleRepeatMode: () => void;
   drawerState: DrawerState;
   duration: number;
   isDrawerPanelVisible: boolean;
-  isLooping: boolean;
   isPlaying: boolean;
   isShuffled: boolean;
   maximizeDrawer: () => void;
@@ -104,10 +106,10 @@ interface PlayerContextValue {
   playlistId: string | null;
   playNext: () => void;
   playPrevious: () => void;
+  repeatMode: RepeatMode;
   seekTo: (seconds: number) => void;
   setDrawerPanelVisible: (isVisible: boolean) => void;
   songs: Song[];
-  toggleLoop: () => void;
   togglePlayback: () => void;
   toggleShuffle: () => void;
 }
@@ -128,14 +130,14 @@ export const usePlayerController = (): PlayerContextValue => {
   const router = useRouter();
   const playerRef = useRef<YoutubePlayer | null>(null);
   const songsRef = useRef<Song[]>([]);
-  const isLoopingRef = useRef(false);
+  const repeatModeRef = useRef<RepeatMode>("off");
   const isShuffledRef = useRef(false);
   const goToSongOnEndRef = useRef<(song: Song) => void>(() => {});
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [playlistId, setPlaylistId] = useState<string | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLooping, setIsLooping] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const [isShuffled, setIsShuffled] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -147,8 +149,8 @@ export const usePlayerController = (): PlayerContextValue => {
   }, [songs]);
 
   useEffect(() => {
-    isLoopingRef.current = isLooping;
-  }, [isLooping]);
+    repeatModeRef.current = repeatMode;
+  }, [repeatMode]);
 
   useEffect(() => {
     isShuffledRef.current = isShuffled;
@@ -204,13 +206,23 @@ export const usePlayerController = (): PlayerContextValue => {
               return;
             }
 
+            if (repeatModeRef.current === "one") {
+              playerRef.current?.seekTo(0, true);
+              playerRef.current?.playVideo();
+              return;
+            }
+
             const queue = songsRef.current;
             const currentIndex = queue.findIndex(
               (song) => song.id === currentSong.id,
             );
             const isLastSong = currentIndex === queue.length - 1;
 
-            if (!isShuffledRef.current && isLastSong && !isLoopingRef.current) {
+            if (
+              repeatModeRef.current !== "all" &&
+              !isShuffledRef.current &&
+              isLastSong
+            ) {
               return;
             }
 
@@ -304,8 +316,18 @@ export const usePlayerController = (): PlayerContextValue => {
     }
   };
 
-  const toggleLoop = () => {
-    setIsLooping((previous) => !previous);
+  const cycleRepeatMode = () => {
+    setRepeatMode((previous) => {
+      if (previous === "off") {
+        return "all";
+      }
+
+      if (previous === "all") {
+        return "one";
+      }
+
+      return "off";
+    });
   };
 
   const toggleShuffle = () => {
@@ -341,27 +363,13 @@ export const usePlayerController = (): PlayerContextValue => {
     setDrawerState("open");
   };
 
-  const closeDrawer = () => {
-    const wasOpen = drawerState === "open";
-
-    setDrawerPanelVisible(false);
-    setTimeout(() => {
-      setDrawerState("closed");
-
-      if (wasOpen && playlistId) {
-        router.replace(`/playlists/${playlistId}`);
-      }
-    }, DRAWER_DISMISS_TRANSITION_MILLISECONDS);
-  };
-
   return {
-    closeDrawer,
     currentSong,
     currentTime,
+    cycleRepeatMode,
     drawerState,
     duration,
     isDrawerPanelVisible,
-    isLooping,
     isPlaying,
     isShuffled,
     maximizeDrawer,
@@ -370,10 +378,10 @@ export const usePlayerController = (): PlayerContextValue => {
     playlistId,
     playNext,
     playPrevious,
+    repeatMode,
     seekTo,
     setDrawerPanelVisible,
     songs,
-    toggleLoop,
     togglePlayback,
     toggleShuffle,
   };

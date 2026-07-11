@@ -1,6 +1,10 @@
 import { auth } from "@/auth";
 import { QuotaUsage, Song, User } from "@/entity";
-import { fetchYoutubeApi, getYoutubeQuotaUsage } from "@/library";
+import {
+  fetchYoutubeApi,
+  getYoutubeQuotaUsage,
+  trimChannelTopicSuffix,
+} from "@/library";
 
 interface YoutubeVideoListResponse {
   items: {
@@ -25,7 +29,7 @@ interface YoutubeSearchListResponse {
 const toSong = (item: YoutubeVideoListResponse["items"][number]): Song => ({
   id: item.id,
   title: item.snippet.title,
-  artist: item.snippet.channelTitle,
+  artist: trimChannelTopicSuffix(item.snippet.channelTitle),
 });
 
 export const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
@@ -70,6 +74,6 @@ export const searchSongs = async (query: string): Promise<Song[]> => {
   return data.items.map((item) => ({
     id: item.id.videoId,
     title: item.snippet.title,
-    artist: item.snippet.channelTitle,
+    artist: trimChannelTopicSuffix(item.snippet.channelTitle),
   }));
 };

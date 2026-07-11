@@ -24,10 +24,8 @@ export default async function ProtectedLayout({
 
   return (
     <PlayerProvider>
-      <PlayerContentArea>
-        <AppHeader quota={quota} user={user} />
-        {children}
-      </PlayerContentArea>
+      <AppHeader quota={quota} user={user} />
+      <PlayerContentArea>{children}</PlayerContentArea>
       {drawer}
       <PlayerMiniPlayer />
       <PlayerDrawerRestoreButton />

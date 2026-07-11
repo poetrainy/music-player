@@ -12,8 +12,8 @@ export function PlayerContentArea({ children }: Props) {
 
   return (
     <div
-      className={`transition-[margin-right] duration-300 ease-out ${
-        isDrawerPanelVisible ? "sm:mr-[420px]" : "mr-0"
+      className={`mx-auto w-full max-w-200 transition-transform duration-300 ease-out ${
+        isDrawerPanelVisible ? "sm:-translate-x-50" : "translate-x-0"
       }`}
     >
       {children}
