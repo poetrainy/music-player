@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
+import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { Song } from "@/entity";
 import {
   deletePlaylistSong,
@@ -135,7 +135,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                   videoId={id}
                   alt={title}
                   fill
-                  sizes="48px"
+                  sizes="3rem"
                   className="scale-125 object-cover"
                 />
               </div>

@@ -67,7 +67,7 @@ src/
 
 単一ファイルで足りるうちはファイル名称に単数形（`entity.ts`・`hook.ts`・`library.ts` など）を用い、内容が増えて分割が必要になったら名称を複数形にしてディレクトリ化する（`entities/`・`hooks/`・`libraries/`）。
 
-`components`・`pages` はこのルールの対象外とし、最初からディレクトリとする。これは「命名規則」内の各ファイルへの命名ルール（例: `src/features/Xx/components` 内は `Xx` を Prefix にする等）が、複数ファイルが存在すること前提のルールであり、単一ファイルから始まる想定と噛み合わないため。
+`components`・`pages` はこの単数形→複数形化のルールの対象外とし、カテゴリ用のフォルダ（`components/`・`pages/`）自体を最初からディレクトリとする。これは「命名規則」内の各ファイルへの命名ルール（例: `src/features/Xx/components` 内は `Xx` を Prefix にする等）が、複数ファイルが存在すること前提のルールであり、単一ファイルから始まる想定と噛み合わないため。
 
 その他、`src` 直下には上記ルールに倣ったファイル・ディレクトリが置かれる。
 
@@ -167,6 +167,7 @@ function Component() {
 - `app` 配下のページコンポーネント名は `Page` とすること
 - Parallel Routes のスロット（`app/(xx)/@xx/**/page.tsx`）のコンポーネント名は `{Xx}Slot` とすること
   - 例: `app/(admin)/@breadcrumb/**/page.tsx` → `BreadcrumbSlot`
+- ログイン要否によるルートグループは `app/(main)`（ログイン後にアクセスする画面）と `app/(auth)`（サインイン等、未ログインでアクセスする画面）に分けること
 
 ### 命名規則
 
@@ -193,6 +194,11 @@ function Component() {
 - Early Return と後続の処理の間は 1 行空けること
 - return の前は 1 行空けること
 - ファイル末尾には改行 (EOF) を付与すること
+
+### スタイル
+
+- サイズ指定は px ではなく rem、または Tailwind のスペーシング/サイズスケール（`w-10`・`h-6` など）を使用すること
+- Tailwind のクラスで表現できない箇所（`next/image` の `sizes` 属性など）も、px ではなく rem で指定すること
 
 ### その他
 

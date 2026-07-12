@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Music, Search } from "lucide-react";
-import { QuotaRing } from "@/components/QuotaRing/QuotaRing";
+import { QuotaRing } from "@/components/QuotaRing";
 import { QuotaUsage, User } from "@/features/user/entity";
 
 interface Props {
@@ -48,7 +48,7 @@ export function AppHeader({ quota, user }: Props) {
                   src={user.avatarUrl}
                   alt={user.name}
                   fill
-                  sizes="36px"
+                  sizes="2.25rem"
                   className="object-cover"
                 />
               </div>

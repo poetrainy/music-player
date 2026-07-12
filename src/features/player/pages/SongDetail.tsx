@@ -12,8 +12,8 @@ import {
   SkipBack,
   SkipForward,
 } from "lucide-react";
-import { IconButton } from "@/components/IconButton/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
+import { IconButton } from "@/components/IconButton";
+import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { formatPlaybackTime } from "@/features/player/library";
 
@@ -69,7 +69,7 @@ export function SongDetailComponent() {
             videoId={currentSong.id}
             alt={currentSong.title}
             fill
-            sizes="384px"
+            sizes="24rem"
             className="object-cover"
             preload
           />

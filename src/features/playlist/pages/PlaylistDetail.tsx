@@ -1,20 +1,14 @@
-import { notFound } from "next/navigation";
-import { SongList } from "@/components/SongList/SongList";
-import { getPlaylistById } from "@/features/playlist/api";
+import { SongList } from "@/components/SongList";
 import { PlaylistPlayButton } from "@/features/playlist/components/PlaylistPlayButton";
 import { PlaylistThumbnailCollage } from "@/features/playlist/components/PlaylistThumbnailCollage";
+import { PlaylistTitleUpdate } from "@/features/playlist/components/PlaylistTitleUpdate";
+import { Playlist } from "@/features/playlist/entity";
 
 interface Props {
-  playlistId: string;
+  playlist: Playlist;
 }
 
-export async function PlaylistDetailComponent({ playlistId }: Props) {
-  const playlist = await getPlaylistById(playlistId);
-
-  if (!playlist) {
-    notFound();
-  }
-
+export function PlaylistDetailComponent({ playlist }: Props) {
   return (
     <div className="flex flex-col gap-6 pb-6">
       <div className="flex flex-col items-center gap-4 pt-6 text-center">
@@ -23,19 +17,20 @@ export async function PlaylistDetailComponent({ playlistId }: Props) {
         </div>
         <div className="flex flex-col gap-1">
           <p className="text-xs font-semibold text-zinc-400">プレイリスト</p>
-          <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
-            {playlist.title}
-          </h1>
+          <PlaylistTitleUpdate
+            playlistId={playlist.id}
+            title={playlist.title}
+          />
           <p className="text-sm text-zinc-400">{playlist.songs.length}曲</p>
         </div>
         <PlaylistPlayButton
-          playlistId={playlistId}
+          playlistId={playlist.id}
           playlistTitle={playlist.title}
           songs={playlist.songs}
         />
       </div>
       <SongList
-        playlistId={playlistId}
+        playlistId={playlist.id}
         playlistTitle={playlist.title}
         songs={playlist.songs}
       />

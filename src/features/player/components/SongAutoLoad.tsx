@@ -11,17 +11,17 @@ interface Props {
   songs: Song[];
 }
 
-export function SongAutoPlay({
+export function SongAutoLoad({
   playlistId,
   playlistTitle,
   song,
   songs,
 }: Props) {
-  const { play } = usePlayer();
+  const { loadSong } = usePlayer();
 
   useEffect(() => {
-    play(song, playlistId, playlistTitle, songs);
-  }, [play, playlistId, playlistTitle, song, songs]);
+    loadSong(song, playlistId, playlistTitle, songs);
+  }, [loadSong, playlistId, playlistTitle, song, songs]);
 
   return null;
 }

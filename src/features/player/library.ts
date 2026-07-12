@@ -1,5 +1,32 @@
 import { Song } from "@/entity";
 
+const PLAYBACK_STATE_STORAGE_KEY = "player-playback-state";
+
+export interface StoredPlaybackState {
+  currentTime: number;
+  playlistId: string;
+  playlistTitle: string;
+  song: Song;
+  songs: Song[];
+  userEmail: string;
+}
+
+export const savePlaybackState = (state: StoredPlaybackState): void => {
+  localStorage.setItem(PLAYBACK_STATE_STORAGE_KEY, JSON.stringify(state));
+};
+
+export const loadPlaybackState = (): StoredPlaybackState | null => {
+  const raw = localStorage.getItem(PLAYBACK_STATE_STORAGE_KEY);
+
+  if (!raw) {
+    return null;
+  }
+
+  const parsed: unknown = JSON.parse(raw);
+
+  return parsed as StoredPlaybackState;
+};
+
 export const formatPlaybackTime = (seconds: number): string => {
   if (!Number.isFinite(seconds) || seconds < 0) {
     return "0:00";

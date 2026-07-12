@@ -116,6 +116,34 @@ export const postYoutubeApi = async <T>(
   return data as T;
 };
 
+export const putYoutubeApi = async <T>(
+  path: string,
+  searchParams: Record<string, string>,
+  body: unknown,
+): Promise<T> => {
+  const accessToken = await getYoutubeAccessToken();
+  const url = buildYoutubeApiUrl(path, searchParams);
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  recordYoutubeApiUsage();
+
+  if (!response.ok) {
+    throw new Error(`YouTube API request failed: ${response.status}`);
+  }
+
+  const data: unknown = await response.json();
+
+  return data as T;
+};
+
 export const deleteYoutubeApi = async (
   path: string,
   searchParams: Record<string, string>,

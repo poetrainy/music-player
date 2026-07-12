@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { getSongsByIds } from "@/api";
 import { Playlist, PlaylistSong } from "@/features/playlist/entity";
-import { deleteYoutubeApi, fetchYoutubeApi, postYoutubeApi } from "@/library";
+import {
+  deleteYoutubeApi,
+  fetchYoutubeApi,
+  postYoutubeApi,
+  putYoutubeApi,
+} from "@/library";
 
 interface YoutubePlaylistListResponse {
   items: {
@@ -110,6 +115,27 @@ export const registerPlaylistSong = async (
   revalidatePath(`/playlists/${playlistId}`);
 
   return result.id;
+};
+
+interface YoutubePlaylistUpdateResponse {
+  id: string;
+}
+
+export const updatePlaylist = async (formData: FormData): Promise<void> => {
+  const playlistId = String(formData.get("playlistId"));
+  const title = String(formData.get("title"));
+
+  await putYoutubeApi<YoutubePlaylistUpdateResponse>(
+    "/playlists",
+    { part: "snippet" },
+    {
+      id: playlistId,
+      snippet: { title },
+    },
+  );
+
+  revalidatePath("/");
+  revalidatePath(`/playlists/${playlistId}`);
 };
 
 export const deletePlaylistSong = async (formData: FormData): Promise<void> => {

@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
+import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { Song } from "@/entity";
 
 export const PLAYLIST_THUMBNAIL_COLLAGE_SIZES = ["sm", "lg"] as const;
@@ -40,7 +40,7 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
               videoId={song.id}
               alt={song.title}
               fill
-              sizes={size === "sm" ? "24px" : "50vw"}
+              sizes={size === "sm" ? "1.5rem" : "50vw"}
               quality={90}
               className="object-cover"
             />

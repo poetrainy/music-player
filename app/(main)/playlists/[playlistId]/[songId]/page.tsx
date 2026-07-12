@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { SongAutoPlay } from "@/features/player/components/SongAutoPlay";
+import { SongAutoLoad } from "@/features/player/components/SongAutoLoad";
 import { getPlaylistById } from "@/features/playlist/api";
 import { PlaylistDetailComponent } from "@/features/playlist/pages/PlaylistDetail";
 
@@ -23,8 +23,8 @@ export default async function Page({ params }: Props) {
 
   return (
     <>
-      <PlaylistDetailComponent playlistId={playlistId} />
-      <SongAutoPlay
+      <PlaylistDetailComponent playlist={playlist} />
+      <SongAutoLoad
         playlistId={playlistId}
         playlistTitle={playlist.title}
         song={song}

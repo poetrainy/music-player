@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
-import { IconButton } from "@/components/IconButton/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
+import { IconButton } from "@/components/IconButton";
+import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { deletePlaylistSong } from "@/features/playlist/api";
 import { PlaylistSong } from "@/features/playlist/entity";
@@ -62,7 +62,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
                   videoId={song.id}
                   alt={song.title}
                   fill
-                  sizes="48px"
+                  sizes="3rem"
                   quality={90}
                   className="scale-125 object-cover"
                 />

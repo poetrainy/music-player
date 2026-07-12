@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -9,7 +10,11 @@ import {
   useState,
 } from "react";
 import { Song } from "@/entity";
-import { getAdjacentSong } from "@/features/player/library";
+import {
+  getAdjacentSong,
+  loadPlaybackState,
+  savePlaybackState,
+} from "@/features/player/library";
 
 interface YoutubePlayer {
   playVideo: () => void;
@@ -104,6 +109,12 @@ interface PlayerContextValue {
   duration: number;
   isPlaying: boolean;
   isShuffled: boolean;
+  loadSong: (
+    song: Song,
+    playlistId: string,
+    playlistTitle: string,
+    songs: Song[],
+  ) => void;
   play: (
     song: Song,
     playlistId: string,
@@ -115,6 +126,7 @@ interface PlayerContextValue {
   playNext: () => void;
   playPrevious: () => void;
   repeatMode: RepeatMode;
+  restorePlayback: () => void;
   seekTo: (seconds: number) => void;
   setActiveMobileView: (view: MobileView) => void;
   songs: Song[];
@@ -134,12 +146,17 @@ export const usePlayer = (): PlayerContextValue => {
   return context;
 };
 
-export const usePlayerController = (): PlayerContextValue => {
+export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const playerRef = useRef<YoutubePlayer | null>(null);
   const songsRef = useRef<Song[]>([]);
   const repeatModeRef = useRef<RepeatMode>("off");
   const isShuffledRef = useRef(false);
   const goToSongOnEndRef = useRef<(song: Song) => void>(() => {});
+  const pendingRestoreTimeRef = useRef<number | null>(null);
+  const pendingPlayIntentRef = useRef(false);
+  const isPlayerReadyRef = useRef(false);
+  const currentSongRef = useRef<Song | null>(null);
+  const pathname = usePathname();
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [playlistId, setPlaylistId] = useState<string | null>(null);
   const [playlistTitle, setPlaylistTitle] = useState("");
@@ -156,6 +173,10 @@ export const usePlayerController = (): PlayerContextValue => {
   }, [songs]);
 
   useEffect(() => {
+    currentSongRef.current = currentSong;
+  }, [currentSong]);
+
+  useEffect(() => {
     repeatModeRef.current = repeatMode;
   }, [repeatMode]);
 
@@ -167,7 +188,7 @@ export const usePlayerController = (): PlayerContextValue => {
     (song: Song) => {
       setCurrentSong(song);
 
-      if (playlistId) {
+      if (playlistId && pathname.startsWith(`/playlists/${playlistId}`)) {
         window.history.replaceState(
           null,
           "",
@@ -175,7 +196,7 @@ export const usePlayerController = (): PlayerContextValue => {
         );
       }
     },
-    [playlistId],
+    [pathname, playlistId],
   );
 
   useEffect(() => {
@@ -202,15 +223,43 @@ export const usePlayerController = (): PlayerContextValue => {
       const target = document.createElement("div");
       container.appendChild(target);
 
+      const restoreTime = pendingRestoreTimeRef.current;
+
+      isPlayerReadyRef.current = false;
+
       playerRef.current = new YT.Player(target, {
         videoId: currentSong.id,
         playerVars: {
-          autoplay: 1,
+          autoplay: restoreTime === null ? 1 : 0,
           controls: 0,
         },
         events: {
           onReady: () => {
-            setIsPlaying(true);
+            isPlayerReadyRef.current = true;
+
+            const player = playerRef.current;
+
+            if (restoreTime !== null) {
+              player?.seekTo(restoreTime, true);
+              setCurrentTime(restoreTime);
+              setDuration(player?.getDuration() ?? 0);
+              pendingRestoreTimeRef.current = null;
+            }
+
+            if (pendingPlayIntentRef.current) {
+              pendingPlayIntentRef.current = false;
+              player?.playVideo();
+              setIsPlaying(true);
+              return;
+            }
+
+            if (restoreTime === null) {
+              setIsPlaying(true);
+              return;
+            }
+
+            player?.pauseVideo();
+            setIsPlaying(false);
           },
           onStateChange: (event) => {
             if (event.data !== YT.PlayerState.ENDED) {
@@ -258,6 +307,7 @@ export const usePlayerController = (): PlayerContextValue => {
 
     return () => {
       isCancelled = true;
+      isPlayerReadyRef.current = false;
       playerRef.current?.destroy();
       playerRef.current = null;
     };
@@ -336,7 +386,8 @@ export const usePlayerController = (): PlayerContextValue => {
   }, [currentSong, goToSong, isShuffled]);
 
   const togglePlayback = useCallback(() => {
-    if (!playerRef.current) {
+    if (!playerRef.current || !isPlayerReadyRef.current) {
+      pendingPlayIntentRef.current = true;
       return;
     }
 
@@ -366,13 +417,88 @@ export const usePlayerController = (): PlayerContextValue => {
   }, []);
 
   const seekTo = useCallback((seconds: number) => {
-    if (!playerRef.current) {
+    if (!playerRef.current || !isPlayerReadyRef.current) {
       return;
     }
 
     playerRef.current.seekTo(seconds, true);
     setCurrentTime(seconds);
   }, []);
+
+  const loadPaused = useCallback(
+    (
+      song: Song,
+      nextPlaylistId: string,
+      nextPlaylistTitle: string,
+      nextSongs: Song[],
+      time: number,
+    ) => {
+      pendingRestoreTimeRef.current = time;
+      setPlaylistId(nextPlaylistId);
+      setPlaylistTitle(nextPlaylistTitle);
+      setSongs(nextSongs);
+      setCurrentSong(song);
+      setActiveMobileView("player");
+    },
+    [],
+  );
+
+  const restorePlayback = useCallback(() => {
+    if (currentSongRef.current || !userEmail) {
+      return;
+    }
+
+    const stored = loadPlaybackState();
+
+    if (!stored || stored.userEmail !== userEmail) {
+      return;
+    }
+
+    loadPaused(
+      stored.song,
+      stored.playlistId,
+      stored.playlistTitle,
+      stored.songs,
+      stored.currentTime,
+    );
+  }, [loadPaused, userEmail]);
+
+  const loadSong = useCallback(
+    (
+      song: Song,
+      nextPlaylistId: string,
+      nextPlaylistTitle: string,
+      nextSongs: Song[],
+    ) => {
+      if (currentSongRef.current?.id === song.id) {
+        return;
+      }
+
+      const stored = loadPlaybackState();
+      const time =
+        stored && stored.userEmail === userEmail && stored.song.id === song.id
+          ? stored.currentTime
+          : 0;
+
+      loadPaused(song, nextPlaylistId, nextPlaylistTitle, nextSongs, time);
+    },
+    [loadPaused, userEmail],
+  );
+
+  useEffect(() => {
+    if (!currentSong || !playlistId || !userEmail) {
+      return;
+    }
+
+    savePlaybackState({
+      currentTime,
+      playlistId,
+      playlistTitle,
+      song: currentSong,
+      songs,
+      userEmail,
+    });
+  }, [currentSong, currentTime, playlistId, playlistTitle, songs, userEmail]);
 
   return {
     activeMobileView,
@@ -382,12 +508,14 @@ export const usePlayerController = (): PlayerContextValue => {
     duration,
     isPlaying,
     isShuffled,
+    loadSong,
     play,
     playlistId,
     playlistTitle,
     playNext,
     playPrevious,
     repeatMode,
+    restorePlayback,
     seekTo,
     setActiveMobileView,
     songs,

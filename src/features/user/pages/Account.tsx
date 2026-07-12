@@ -28,7 +28,7 @@ export function AccountComponent({ quota, user }: Props) {
             src={user.avatarUrl}
             alt={user.name}
             fill
-            sizes="112px"
+            sizes="7rem"
             className="object-cover"
           />
         </div>

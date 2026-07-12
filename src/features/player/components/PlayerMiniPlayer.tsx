@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
-import { IconButton } from "@/components/IconButton/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail/YoutubeThumbnail";
+import { IconButton } from "@/components/IconButton";
+import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { usePlayer } from "@/features/player/hook";
 
 export function PlayerMiniPlayer() {
@@ -53,7 +53,7 @@ export function PlayerMiniPlayer() {
               videoId={currentSong.id}
               alt={currentSong.title}
               fill
-              sizes="40px"
+              sizes="2.5rem"
               className="scale-125 object-cover"
             />
           </div>

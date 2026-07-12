@@ -9,10 +9,11 @@ import {
 
 interface Props {
   children: ReactNode;
+  userEmail: string;
 }
 
-export function PlayerProvider({ children }: Props) {
-  const player = usePlayerController();
+export function PlayerProvider({ children, userEmail }: Props) {
+  const player = usePlayerController(userEmail);
 
   return (
     <PlayerContext.Provider value={player}>

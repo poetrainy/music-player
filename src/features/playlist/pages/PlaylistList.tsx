@@ -1,9 +1,11 @@
-import { getPlaylists } from "@/features/playlist/api";
 import { PlaylistCard } from "@/features/playlist/components/PlaylistCard";
+import { Playlist } from "@/features/playlist/entity";
 
-export async function PlaylistListComponent() {
-  const playlists = await getPlaylists();
+interface Props {
+  playlists: Playlist[];
+}
 
+export function PlaylistListComponent({ playlists }: Props) {
   return (
     <div className="flex flex-col gap-6 p-4 pt-6">
       <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
