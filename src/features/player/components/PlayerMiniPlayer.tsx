@@ -75,25 +75,25 @@ export function PlayerMiniPlayer() {
             href={`/playlists/${playlistId}/${currentSong.id}`}
             onClick={() => setActiveMobileView("player")}
             scroll={false}
-            className="hidden min-w-0 flex-1 items-center gap-3 text-left active:opacity-70 md:flex"
+            className="hidden max-w-40 min-w-0 items-center gap-3 text-left active:opacity-70 md:flex"
           >
             {songInfo}
           </Link>
         ) : (
-          <div className="hidden min-w-0 flex-1 items-center gap-3 text-left md:flex">
+          <div className="hidden max-w-40 min-w-0 items-center gap-3 text-left md:flex">
             {songInfo}
           </div>
         )}
         <button
           type="button"
           onClick={() => setActiveMobileView("player")}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70 md:hidden"
+          className="flex max-w-40 min-w-0 items-center gap-3 text-left active:opacity-70 md:hidden"
         >
           {songInfo}
         </button>
         <PlayerVolumeControl />
         {!isSidebarShowing && (
-          <>
+          <div className="ml-auto flex items-center gap-3">
             {hasAdjacentSong && (
               <IconButton
                 type="button"
@@ -126,7 +126,7 @@ export function PlayerMiniPlayer() {
                 <SkipForward className="size-5" fill="currentColor" />
               </IconButton>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
