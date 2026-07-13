@@ -12,9 +12,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SERVICE_NAME = "YouTube Music Player";
+const SERVICE_DESCRIPTION = "プレイリストから音楽を聴くことができます。";
+
 export const metadata: Metadata = {
-  title: "YouTube Music Player",
-  description: "YouTube Music APIを利用した音楽プレイヤー",
+  title: {
+    default: SERVICE_NAME,
+    template: `%s｜${SERVICE_NAME}`,
+  },
+  description: SERVICE_DESCRIPTION,
+  openGraph: {
+    title: SERVICE_NAME,
+    description: SERVICE_DESCRIPTION,
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 import { getSongsByIds } from "@/api";
 import { Playlist, PlaylistSong } from "@/features/playlist/entity";
 import {
@@ -70,26 +71,26 @@ export const getPlaylists = async (): Promise<Playlist[]> => {
   );
 };
 
-export const getPlaylistById = async (
-  playlistId: string,
-): Promise<Playlist | null> => {
-  const data = await fetchYoutubeApi<YoutubePlaylistListResponse>(
-    "/playlists",
-    { part: "snippet", id: playlistId },
-  );
+export const getPlaylistById = cache(
+  async (playlistId: string): Promise<Playlist | null> => {
+    const data = await fetchYoutubeApi<YoutubePlaylistListResponse>(
+      "/playlists",
+      { part: "snippet", id: playlistId },
+    );
 
-  const item = data.items[0];
+    const item = data.items[0];
 
-  if (!item) {
-    return null;
-  }
+    if (!item) {
+      return null;
+    }
 
-  return {
-    id: item.id,
-    title: item.snippet.title,
-    songs: await getPlaylistSongs(item.id),
-  };
-};
+    return {
+      id: item.id,
+      title: item.snippet.title,
+      songs: await getPlaylistSongs(item.id),
+    };
+  },
+);
 
 export const registerPlaylistSong = async (
   formData: FormData,

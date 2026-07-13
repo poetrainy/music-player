@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #121212;
-  --foreground: #ffffff;
-  --brand: #a855f7;
-  --surface: #121212;
-  --surface-elevated: #242424;
+  --background: var(--color-zinc-900);
+  --foreground: var(--color-white);
+  --brand: var(--color-purple-500);
+  --surface: var(--color-zinc-900);
+  --surface-elevated: var(--color-zinc-800);
 }
 
 @theme inline {
