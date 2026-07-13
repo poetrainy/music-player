@@ -66,6 +66,8 @@ declare global {
 
 export const PLAYER_CONTAINER_ID = "player-youtube-container";
 
+const SONG_DETAIL_PATHNAME_PATTERN = /^\/playlists\/[^/]+\/[^/]+$/;
+
 const YOUTUBE_IFRAME_API_SRC = "https://www.youtube.com/iframe_api";
 const PLAYBACK_TIME_POLLING_INTERVAL_MILLISECONDS = 500;
 
@@ -177,6 +179,15 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const [duration, setDuration] = useState(0);
   const [activeMobileView, setActiveMobileView] = useState<MobileView>("list");
   const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
+  const [previousPathname, setPreviousPathname] = useState(pathname);
+
+  if (pathname !== previousPathname) {
+    setPreviousPathname(pathname);
+
+    if (!SONG_DETAIL_PATHNAME_PATTERN.test(pathname)) {
+      setActiveMobileView("list");
+    }
+  }
 
   useEffect(() => {
     songsRef.current = songs;
@@ -461,13 +472,17 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       nextPlaylistTitle: string,
       nextSongs: Song[],
       time: number,
+      openPlayer: boolean,
     ) => {
       pendingRestoreTimeRef.current = time;
       setPlaylistId(nextPlaylistId);
       setPlaylistTitle(nextPlaylistTitle);
       setSongs(nextSongs);
       setCurrentSong(song);
-      setActiveMobileView("player");
+
+      if (openPlayer) {
+        setActiveMobileView("player");
+      }
     },
     [],
   );
@@ -489,6 +504,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       stored.playlistTitle,
       stored.songs,
       stored.currentTime,
+      false,
     );
   }, [loadPaused, userEmail]);
 
@@ -511,6 +527,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       nextSongs: Song[],
     ) => {
       if (currentSongRef.current?.id === song.id) {
+        setActiveMobileView("player");
         return;
       }
 
@@ -520,7 +537,14 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
           ? stored.currentTime
           : 0;
 
-      loadPaused(song, nextPlaylistId, nextPlaylistTitle, nextSongs, time);
+      loadPaused(
+        song,
+        nextPlaylistId,
+        nextPlaylistTitle,
+        nextSongs,
+        time,
+        true,
+      );
     },
     [loadPaused, userEmail],
   );
