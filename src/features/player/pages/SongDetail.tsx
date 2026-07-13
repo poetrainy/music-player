@@ -13,7 +13,7 @@ import {
   SkipForward,
 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { formatPlaybackTime } from "@/features/player/library";
 
@@ -36,6 +36,7 @@ export function SongDetailComponent() {
     togglePlayback,
     toggleShuffle,
   } = usePlayer();
+
   const hasAdjacentSong = songs.length > 1;
 
   if (!currentSong || !playlistId) {
@@ -65,9 +66,9 @@ export function SongDetailComponent() {
       </div>
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
         <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60">
-          <YoutubeThumbnail
+          <SongThumbnail
             key={currentSong.id}
-            videoId={currentSong.id}
+            songId={currentSong.id}
             alt={currentSong.title}
             size="large"
             preload

@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Music } from "lucide-react";
 import { cn } from "@/library";
 
-export const YOUTUBE_THUMBNAIL_SIZES = ["small", "large"] as const;
-export type YoutubeThumbnailSize = (typeof YOUTUBE_THUMBNAIL_SIZES)[number];
+export const SONG_THUMBNAIL_SIZES = ["small", "large"] as const;
+export type SongThumbnailSize = (typeof SONG_THUMBNAIL_SIZES)[number];
 
 const LARGE_THUMBNAIL_QUALITIES = [
   "maxresdefault",
@@ -23,19 +23,21 @@ const SMALL_THUMBNAIL_QUALITIES = [
   "maxresdefault",
 ] as const;
 
-type Sizes = "8rem" | "24rem";
+export const SONG_THUMBNAIL_IMAGE_SIZES = ["8rem", "24rem"] as const;
+export type SongThumbnailImageSize =
+  (typeof SONG_THUMBNAIL_IMAGE_SIZES)[number];
 
 interface Props extends Omit<
   ImageProps,
   "sizes" | "src" | "onError" | "onLoad"
 > {
-  videoId: string;
-  size: YoutubeThumbnailSize;
-  sizes?: Sizes;
+  songId: string;
+  size: SongThumbnailSize;
+  sizes?: SongThumbnailImageSize;
 }
 
-export function YoutubeThumbnail({
-  videoId,
+export function SongThumbnail({
+  songId,
   alt,
   className,
   size,
@@ -58,8 +60,9 @@ export function YoutubeThumbnail({
   const thumbnailQualities =
     size === "large" ? LARGE_THUMBNAIL_QUALITIES : SMALL_THUMBNAIL_QUALITIES;
   const isLastFallback = qualityIndex === thumbnailQualities.length - 1;
-  const defaultSizes: Sizes = size === "large" ? "24rem" : "8rem";
-  const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/${thumbnailQualities[qualityIndex]}.jpg`;
+  const defaultSizes: SongThumbnailImageSize =
+    size === "large" ? "24rem" : "8rem";
+  const thumbnailUrl = `https://i.ytimg.com/vi/${songId}/${thumbnailQualities[qualityIndex]}.jpg`;
 
   if (hasFailed) {
     return (

@@ -1,8 +1,8 @@
 "use client";
 
 import { Play } from "lucide-react";
-import { Song } from "@/entity";
 import { usePlayer } from "@/features/player/hook";
+import { Song } from "@/features/song/entity";
 
 interface Props {
   playlistId: string;
@@ -16,6 +16,7 @@ export function PlaylistPlayButton({
   songs,
 }: Props) {
   const { play } = usePlayer();
+
   const firstSong = songs[0];
 
   if (!firstSong) {

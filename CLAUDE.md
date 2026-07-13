@@ -34,21 +34,26 @@
 
 ## ディレクトリ構成
 
-`src` 直下は「汎用（アプリケーション全体で利用する）機能」を扱う 1 つの feature とみなし、`src/features/Xx` と同じ構成を取る。`src/features/Xx` に適用されるルールは、`src` 直下にもそのまま適用される。
+`src` 直下は「汎用（アプリケーション全体で利用する）機能」を扱う 1 つの feature とみなし、`src/features/**` と同じ構成を取る。`src/features/**` に適用されるルールは、`src` 直下にもそのまま適用される。
 
 ```text
 src/
 ├── components/
+│   └── Layout/
 ├── features/
 │   ├── feature-a/
 │   │   ├── components/
+│   │   ├── layouts/
 │   │   ├── pages/
+│   │   ├── providers/
 │   │   ├── api.ts
 │   │   ├── entity.ts
 │   │   ├── hook.ts
 │   │   └── library.ts
 │   └── ...
+├── layouts/
 ├── mocks/
+├── providers/
 ├── tests/
 ├── api.ts
 ├── entity.ts
@@ -60,14 +65,18 @@ src/
 - `components`：UI コンポーネント
 - `entity.ts`：型・モデル・ドメインオブジェクト
 - `hook.ts`：Hook
+- `layouts`：複数ページ・複数コンポーネント間で共有するレイアウト用コンポーネント
 - `library.ts`：ユーティリティ
 - `mocks`：モックデータ・モック API 実装（`src/features` 直下には存在しない）
 - `pages`：feature 固有の表示コンポーネント（`src` 直下には存在しない）
+- `providers`：React Context の Provider コンポーネント
 - `tests`：テストコード。テスト対象のファイルと同じディレクトリ構成を取る（`src/features` 直下には存在しない）
+
+Header・Footer・Navigation など、ページ全体の構造を担うコンポーネントは `components/Layout` に配置すること。
 
 単一ファイルで足りるうちはファイル名称に単数形（`entity.ts`・`hook.ts`・`library.ts` など）を用い、内容が増えて分割が必要になったら名称を複数形にしてディレクトリ化する（`entities/`・`hooks/`・`libraries/`）。
 
-`components`・`pages` はこの単数形→複数形化のルールの対象外とし、カテゴリ用のフォルダ（`components/`・`pages/`）自体を最初からディレクトリとする。これは「命名規則」内の各ファイルへの命名ルール（例: `src/features/Xx/components` 内は `Xx` を Prefix にする等）が、複数ファイルが存在すること前提のルールであり、単一ファイルから始まる想定と噛み合わないため。
+`components`・`layouts`・`pages`・`providers` はこの単数形→複数形化のルールの対象外とし、カテゴリ用のフォルダ（`components/`・`layouts/`・`pages/`・`providers/`）自体を最初からディレクトリとする。これは「命名規則」内の各ファイルへの命名ルール（例: `src/features/**/components` 内は `**` を Prefix にする等）が、複数ファイルが存在すること前提のルールであり、単一ファイルから始まる想定と噛み合わないため。
 
 その他、`src` 直下には上記ルールに倣ったファイル・ディレクトリが置かれる。
 
@@ -147,6 +156,7 @@ items.length === 0;
   3. Event Handler
   4. Utility（定数・計算・派生値など）
   5. return
+  6. export していない internal なコンポーネント
 - コンポーネントの interface はコンポーネントの直前に記述すること
 - DOM に描画しない場合は `null` を返すこと (`<></>` は使用しない)
 
@@ -198,7 +208,7 @@ function Component() {
   - 例: `Course.tsx` → `CourseComponent`（`pages` 配下は上記の `**Component` ルールを優先）
 - ファイル内で private に定義するコンポーネント（internal・非 export）も、そのファイル名を Prefix として付けること
   - 例: `AdminUser.tsx` 内の private コンポーネント → `AdminUserPin`
-- `src/features/Xx/components` 内の関数（コンポーネント）名には `Xx` を Prefix として付けること
+- `src/features/**/components` 内の関数（コンポーネント）名には `**` を Prefix として付けること
   - 但し、admin 専用のコンポーネントは `Admin` を先頭に付けてよい
   - 例: `src/features/office/components` → `OfficeForm`（通常）, `AdminOfficeList`（admin 専用）
 - 登録系は `register`、更新系は `update`、削除系は `delete` に統一すること（API 関数に限らず、ページ・コンポーネント・URL パス・変数名すべてに適用する）
@@ -213,6 +223,7 @@ function Component() {
 ### レイアウト
 
 - import と本文の間は 1 行空けること
+- Hooks の定義と後続の処理の間は 1 行空けること
 - Early Return と後続の処理の間は 1 行空けること
 - return の前は 1 行空けること
 - ファイル末尾には改行 (EOF) を付与すること
@@ -222,8 +233,14 @@ function Component() {
 - サイズ指定は px ではなく rem、または Tailwind のスペーシング/サイズスケール（`w-10`・`h-6` など）を使用すること
 - Tailwind のクラスで表現できない箇所（`next/image` の `sizes` 属性など）も、px ではなく rem で指定すること
 
+### アクセシビリティ
+
+- セマンティックな HTML を使用すること
+- アクセシビリティは WCAG AA 基準を満たすこと（特に `aria-label` を適切に付与すること）
+
 ### その他
 
+- SVG を独自に作成せず、Lucide Icons を使用すること
 - 不要なコメントは追加しないこと
 - この MD 内で指示した必要なコメントは、プレフィックスに `NOTE: ` をつけること
 - 未使用の import は残さないこと
@@ -233,8 +250,8 @@ function Component() {
 - 必要以上にリファクタリングしないこと
 - 指示された範囲以外のコードは変更しないこと
 - コンポーネントは単一責務を意識すること
-- 共通利用する UI は `src/components` に配置すること
-- Feature 内でのみ利用する UI は `src/features/**/components` に配置すること
+- 汎用的な UI（ボタン・アイコンなど、特定の feature のドメインに依存しないもの）は `src/components` に配置すること
+- 特定の feature のドメインに依存する UI は、複数の feature から利用される場合であっても `src/features/**/components` に配置すること
 - API 通信は `api` に記述すること
 - コンポーネント内で直接 fetch を実装しないこと
 - 共通処理は Hook または library に切り出すこと

@@ -1,4 +1,4 @@
-import { Song } from "@/entity";
+import { Song } from "@/features/song/entity";
 
 const PLAYBACK_STATE_STORAGE_KEY = "player-playback-state";
 

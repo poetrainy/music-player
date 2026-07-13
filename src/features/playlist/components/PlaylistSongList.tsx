@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { deletePlaylistSong } from "@/features/playlist/api";
 import { PlaylistSong } from "@/features/playlist/entity";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 
 interface Props {
   playlistId: string;
@@ -15,7 +15,7 @@ interface Props {
   songs: PlaylistSong[];
 }
 
-export function SongList({ playlistId, playlistTitle, songs }: Props) {
+export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
   const { currentSong, play } = usePlayer();
   const router = useRouter();
   const [openMenuSongId, setOpenMenuSongId] = useState<string | null>(null);
@@ -58,11 +58,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
                 {index + 1}
               </span>
               <div className="bg-surface-elevated relative h-12 w-12 shrink-0 overflow-hidden rounded">
-                <YoutubeThumbnail
-                  videoId={song.id}
-                  alt={song.title}
-                  size="small"
-                />
+                <SongThumbnail songId={song.id} alt={song.title} size="small" />
               </div>
               <div className="flex min-w-0 flex-col">
                 <p

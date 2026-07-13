@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SERVICE_NAME } from "@/library";
+import { SERVICE_NAME, SERVICE_THEME_COLOR } from "@/library";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +26,10 @@ export const metadata: Metadata = {
     description: SERVICE_DESCRIPTION,
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: SERVICE_THEME_COLOR,
 };
 
 export default function RootLayout({

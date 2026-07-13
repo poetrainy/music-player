@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Song } from "@/entity";
 import { usePlayer } from "@/features/player/hook";
+import { Song } from "@/features/song/entity";
 
 interface Props {
   playlistId: string;
@@ -11,7 +11,7 @@ interface Props {
   songs: Song[];
 }
 
-export function SongAutoLoad({
+export function PlayerSongAutoLoad({
   playlistId,
   playlistTitle,
   song,

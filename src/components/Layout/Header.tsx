@@ -10,7 +10,7 @@ interface Props {
   user: User;
 }
 
-export function AppHeader({ quota, user }: Props) {
+export function Header({ quota, user }: Props) {
   return (
     <header className="sticky top-0 z-40 w-full">
       <div className="mx-auto flex max-w-300 items-center justify-between gap-3 p-4">
@@ -30,7 +30,7 @@ export function AppHeader({ quota, user }: Props) {
             <Music className="h-6 w-6" />
           </Link>
         </h1>
-        <div className="flex items-center gap-3">
+        <nav className="flex items-center gap-3">
           <Link
             href="/search"
             className="text-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded active:bg-white/10"
@@ -38,7 +38,11 @@ export function AppHeader({ quota, user }: Props) {
           >
             <Search className="h-6 w-6" />
           </Link>
-          <Link href="/account" className="shrink-0 active:opacity-70">
+          <Link
+            href="/account"
+            aria-label="アカウント"
+            className="shrink-0 active:opacity-70"
+          >
             <QuotaRing
               size={44}
               totalUnits={quota.totalUnits}
@@ -55,7 +59,7 @@ export function AppHeader({ quota, user }: Props) {
               </div>
             </QuotaRing>
           </Link>
-        </div>
+        </nav>
       </div>
     </header>
   );

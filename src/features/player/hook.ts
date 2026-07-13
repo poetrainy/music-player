@@ -9,12 +9,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Song } from "@/entity";
 import {
   getAdjacentSong,
   loadPlaybackState,
   savePlaybackState,
 } from "@/features/player/library";
+import { Song } from "@/features/song/entity";
+import { SERVICE_NAME } from "@/library";
 
 interface YoutubePlayer {
   playVideo: () => void;
@@ -174,6 +175,14 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
   useEffect(() => {
     currentSongRef.current = currentSong;
+  }, [currentSong]);
+
+  useEffect(() => {
+    if (!currentSong) {
+      return;
+    }
+
+    document.title = `♩${currentSong.title}｜${SERVICE_NAME}`;
   }, [currentSong]);
 
   useEffect(() => {

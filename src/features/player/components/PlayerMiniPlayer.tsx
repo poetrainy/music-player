@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { usePlayer } from "@/features/player/hook";
 
 export function PlayerMiniPlayer() {
@@ -23,6 +23,7 @@ export function PlayerMiniPlayer() {
     togglePlayback,
   } = usePlayer();
   const pathname = usePathname();
+
   const hasAdjacentSong = songs.length > 1;
 
   if (!currentSong || !playlistId) {
@@ -49,9 +50,9 @@ export function PlayerMiniPlayer() {
           className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70"
         >
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
-            <YoutubeThumbnail
+            <SongThumbnail
               key={currentSong.id}
-              videoId={currentSong.id}
+              songId={currentSong.id}
               alt={currentSong.title}
               size="small"
             />
@@ -65,7 +66,7 @@ export function PlayerMiniPlayer() {
             </p>
           </div>
         </Link>
-        {isPanelShowing ? null : (
+        {!isPanelShowing && (
           <>
             {hasAdjacentSong && (
               <IconButton

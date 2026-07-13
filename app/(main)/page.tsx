@@ -1,4 +1,4 @@
-import { PlaybackRestore } from "@/features/player/components/PlaybackRestore";
+import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { getPlaylists } from "@/features/playlist/api";
 import { PlaylistListComponent } from "@/features/playlist/pages/PlaylistList";
 
@@ -8,7 +8,7 @@ export default async function Page() {
   return (
     <>
       <PlaylistListComponent playlists={playlists} />
-      <PlaybackRestore />
+      <PlayerPlaybackRestore />
     </>
   );
 }

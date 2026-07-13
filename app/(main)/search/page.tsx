@@ -1,6 +1,6 @@
-import { searchSongs } from "@/api";
 import { getPlaylists } from "@/features/playlist/api";
 import { SearchComponent } from "@/features/search/pages/Search";
+import { searchSongs } from "@/features/song/api";
 
 interface Props {
   searchParams: Promise<{ q?: string }>;

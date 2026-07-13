@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
-import { Song } from "@/entity";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+import { Song } from "@/features/song/entity";
 
 export const PLAYLIST_THUMBNAIL_COLLAGE_SIZES = ["sm", "lg"] as const;
 export type PlaylistThumbnailCollageSize =
@@ -36,8 +36,8 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
       {tiles.map((song, index) =>
         song ? (
           <div key={song.id} className="relative">
-            <YoutubeThumbnail
-              videoId={song.id}
+            <SongThumbnail
+              songId={song.id}
               alt={song.title}
               size={size === "sm" ? "small" : "large"}
               sizes={size === "sm" ? "8rem" : "24rem"}

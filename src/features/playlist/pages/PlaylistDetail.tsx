@@ -1,5 +1,5 @@
-import { SongList } from "@/components/SongList";
 import { PlaylistPlayButton } from "@/features/playlist/components/PlaylistPlayButton";
+import { PlaylistSongList } from "@/features/playlist/components/PlaylistSongList";
 import { PlaylistThumbnailCollage } from "@/features/playlist/components/PlaylistThumbnailCollage";
 import { PlaylistTitleUpdate } from "@/features/playlist/components/PlaylistTitleUpdate";
 import { Playlist } from "@/features/playlist/entity";
@@ -29,7 +29,7 @@ export function PlaylistDetailComponent({ playlist }: Props) {
           songs={playlist.songs}
         />
       </div>
-      <SongList
+      <PlaylistSongList
         playlistId={playlist.id}
         playlistTitle={playlist.title}
         songs={playlist.songs}

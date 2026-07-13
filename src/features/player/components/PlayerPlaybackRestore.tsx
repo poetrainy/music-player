@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePlayer } from "@/features/player/hook";
 
-export function PlaybackRestore() {
+export function PlayerPlaybackRestore() {
   const { restorePlayback } = usePlayer();
 
   useEffect(() => {

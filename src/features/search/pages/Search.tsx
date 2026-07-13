@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { YoutubeThumbnail } from "@/components/YoutubeThumbnail";
-import { Song } from "@/entity";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import {
   deletePlaylistSong,
   registerPlaylistSong,
 } from "@/features/playlist/api";
 import { Playlist } from "@/features/playlist/entity";
+import { Song } from "@/features/song/entity";
 
 interface Props {
   playlists: Playlist[];
@@ -131,12 +131,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
           {songs.map(({ id, title, artist }) => (
             <li key={id} className="flex items-center gap-3 px-2 py-2">
               <div className="bg-surface-elevated relative h-12 w-12 shrink-0 overflow-hidden rounded">
-                <YoutubeThumbnail
-                  videoId={id}
-                  alt={title}
-                  size="small"
-                  preload
-                />
+                <SongThumbnail songId={id} alt={title} size="small" preload />
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
                 <p className="text-foreground truncate text-sm font-medium">
