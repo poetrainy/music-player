@@ -18,7 +18,7 @@ const cvaPlaylistCardLink = cva("flex transition-colors", {
   variants: {
     viewMode: {
       grid: "flex-col gap-3 rounded-lg p-3",
-      list: "items-center gap-3 rounded-md px-2 py-2",
+      list: "items-center gap-3 rounded-md p-2 md:p-2.5",
     },
     isCurrentPlaylist: {
       true: "bg-surface-elevated",
@@ -27,12 +27,8 @@ const cvaPlaylistCardLink = cva("flex transition-colors", {
   },
 });
 
-const cvaPlaylistCardTitle = cva("truncate", {
+const cvaPlaylistCardTitle = cva("truncate text-sm font-bold", {
   variants: {
-    viewMode: {
-      grid: "text-sm font-semibold",
-      list: "text-sm font-medium",
-    },
     isCurrentPlaylist: {
       true: "text-brand",
       false: "text-foreground",
@@ -55,7 +51,7 @@ export function PlaylistCard({ playlist, viewMode }: Props) {
         size={viewMode === "grid" ? "lg" : "sm"}
       />
       <div className="flex min-w-0 flex-col">
-        <p className={cvaPlaylistCardTitle({ viewMode, isCurrentPlaylist })}>
+        <p className={cvaPlaylistCardTitle({ isCurrentPlaylist })}>
           {playlist.title}
         </p>
         <p className="truncate text-xs text-zinc-400">

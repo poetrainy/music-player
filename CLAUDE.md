@@ -104,6 +104,8 @@ export const COURSE_STATUSES = ["public", "archived"] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 ```
 
+- enum 的に `as const` 配列で値の一覧を定義する場合、他ファイルから使わず export しない internal な型であっても、対応する型を必ず用意すること
+  - 但し、`entity.ts` に書くほどでもない軽量な値（コンポーネント内部でのみ使う表示分類など）は、`as const` 配列を用意せず `type` のみで定義してよい
 - `any` は使用しないこと
 - 非 null アサーション演算子 (`!`) は使用しないこと
 - 型アサーション (`as`) は原則禁止とし、型で解決できない場合のみ使用すること
@@ -232,6 +234,10 @@ function Component() {
 
 - サイズ指定は px ではなく rem、または Tailwind のスペーシング/サイズスケール（`w-10`・`h-6` など）を使用すること
 - Tailwind のクラスで表現できない箇所（`next/image` の `sizes` 属性など）も、px ではなく rem で指定すること
+- 縦横（width・height）が同じ値になる場合は `w-*`・`h-*` を個別に指定せず `size-*` を使用すること
+- padding・margin も同様に、上下左右で同じ値になる場合はまとめて指定すること（例: `px-4 py-4` ではなく `p-4`）
+- className を条件によって分岐させる場合は `cva` を使用すること
+- className を複数結合する場合は `cn` を使用し、テンプレートリテラルや文字列結合 (`+`) を使用しないこと
 
 ### アクセシビリティ
 

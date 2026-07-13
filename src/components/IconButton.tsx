@@ -10,7 +10,7 @@ export function IconButton({ children, className, ...props }: Props) {
     <button
       {...props}
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded transition-colors hover:bg-white/10 active:bg-white/15",
+        "flex size-9 shrink-0 items-center justify-center rounded transition-colors hover:bg-white/10 active:bg-white/15",
         className,
       )}
     >

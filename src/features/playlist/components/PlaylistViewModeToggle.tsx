@@ -48,9 +48,9 @@ export function PlaylistViewModeToggle({ onChange }: Props) {
       className="text-zinc-400"
     >
       {viewMode === "grid" ? (
-        <LayoutGrid className="h-5 w-5" />
+        <LayoutGrid className="size-5" />
       ) : (
-        <List className="h-5 w-5" />
+        <List className="size-5" />
       )}
     </IconButton>
   );

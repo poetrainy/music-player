@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import {
   deletePlaylistSong,
   registerPlaylistSong,
 } from "@/features/playlist/api";
 import { Playlist } from "@/features/playlist/entity";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { Song } from "@/features/song/entity";
 
 interface Props {
@@ -102,7 +102,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
           className="bg-brand active:bg-brand/80 flex shrink-0 items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-black"
         >
           {isSearchPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin" />
           ) : (
             "検索"
           )}
@@ -129,8 +129,8 @@ export function SearchComponent({ playlists, query, songs }: Props) {
       ) : (
         <ul className="flex flex-col">
           {songs.map(({ id, title, artist }) => (
-            <li key={id} className="flex items-center gap-3 px-2 py-2">
-              <div className="bg-surface-elevated relative h-12 w-12 shrink-0 overflow-hidden rounded">
+            <li key={id} className="flex items-center gap-3 p-2">
+              <div className="bg-surface-elevated relative size-12 shrink-0 overflow-hidden rounded">
                 <SongThumbnail songId={id} alt={title} size="small" preload />
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
@@ -153,12 +153,12 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                       ? "プレイリストから削除"
                       : "プレイリストに追加"
                   }
-                  className="text-brand active:text-brand/70 flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
+                  className="text-brand active:text-brand/70 flex size-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
                 >
                   {pendingSongId === id ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="size-5 animate-spin" />
                   ) : playlistItemIdsBySongId[id] ? (
-                    <Check className="h-5 w-5" />
+                    <Check className="size-5" />
                   ) : (
                     "追加"
                   )}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { cva } from "class-variance-authority";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { usePlayer } from "@/features/player/hook";
@@ -14,6 +15,24 @@ interface Props {
   playlistTitle: string;
   songs: PlaylistSong[];
 }
+
+const cvaPlaylistSongListItem = cva("flex items-center gap-3 rounded-md px-2", {
+  variants: {
+    isCurrentSong: {
+      true: "bg-surface-elevated",
+      false: "hover:bg-surface-elevated active:bg-surface-elevated",
+    },
+  },
+});
+
+const cvaPlaylistSongListTitle = cva("truncate text-sm font-medium", {
+  variants: {
+    isCurrentSong: {
+      true: "text-brand",
+      false: "text-foreground",
+    },
+  },
+});
 
 export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
   const { currentSong, play } = usePlayer();
@@ -47,7 +66,7 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
         return (
           <li
             key={song.id}
-            className={`flex items-center gap-3 rounded-md px-2 ${isCurrentSong ? "bg-surface-elevated" : "hover:bg-surface-elevated active:bg-surface-elevated"}`}
+            className={cvaPlaylistSongListItem({ isCurrentSong })}
           >
             <button
               type="button"
@@ -57,13 +76,11 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
               <span className="w-4 shrink-0 text-right text-sm text-zinc-500">
                 {index + 1}
               </span>
-              <div className="bg-surface-elevated relative h-12 w-12 shrink-0 overflow-hidden rounded">
+              <div className="bg-surface-elevated relative size-12 shrink-0 overflow-hidden rounded">
                 <SongThumbnail songId={song.id} alt={song.title} size="small" />
               </div>
               <div className="flex min-w-0 flex-col">
-                <p
-                  className={`truncate text-sm font-medium ${isCurrentSong ? "text-brand" : "text-foreground"}`}
-                >
+                <p className={cvaPlaylistSongListTitle({ isCurrentSong })}>
                   {song.title}
                 </p>
                 <p className="truncate text-xs text-zinc-400">{song.artist}</p>
@@ -80,7 +97,7 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
                 aria-label="オプション"
                 className="text-zinc-400"
               >
-                <MoreVertical className="h-5 w-5" />
+                <MoreVertical className="size-5" />
               </IconButton>
               {openMenuSongId === song.id && (
                 <div className="bg-surface-elevated absolute right-0 z-10 mt-1 rounded-md border border-white/10 shadow-lg shadow-black/40">
@@ -90,7 +107,7 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
                     disabled={isDeleting}
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm whitespace-nowrap text-red-400 active:bg-red-500/10 disabled:text-zinc-500"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                     プレイリストから削除
                   </button>
                 </div>

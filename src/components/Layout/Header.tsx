@@ -19,7 +19,7 @@ export function Header({ quota, user }: Props) {
             href="/"
             className="text-foreground hidden items-center gap-2 active:text-zinc-400 md:flex"
           >
-            <Music className="h-6 w-6" />
+            <Music className="size-6" />
             <span>{SERVICE_NAME}</span>
           </Link>
           <Link
@@ -27,16 +27,16 @@ export function Header({ quota, user }: Props) {
             aria-label={SERVICE_NAME}
             className="text-foreground flex items-center active:text-zinc-400 md:hidden"
           >
-            <Music className="h-6 w-6" />
+            <Music className="size-6" />
           </Link>
         </h1>
         <nav className="flex items-center gap-3">
           <Link
             href="/search"
-            className="text-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded active:bg-white/10"
+            className="text-foreground flex size-9 shrink-0 items-center justify-center rounded active:bg-white/10"
             aria-label="検索"
           >
-            <Search className="h-6 w-6" />
+            <Search className="size-6" />
           </Link>
           <Link
             href="/account"
@@ -48,7 +48,7 @@ export function Header({ quota, user }: Props) {
               totalUnits={quota.totalUnits}
               usedUnits={quota.usedUnits}
             >
-              <div className="relative h-9 w-9 overflow-hidden rounded-full">
+              <div className="relative size-9 overflow-hidden rounded-full">
                 <Image
                   src={user.avatarUrl}
                   alt={user.name}

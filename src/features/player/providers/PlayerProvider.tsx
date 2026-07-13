@@ -20,7 +20,7 @@ export function PlayerProvider({ children, userEmail }: Props) {
       {children}
       <div
         id={PLAYER_CONTAINER_ID}
-        className="pointer-events-none fixed top-0 left-0 h-px w-px -translate-x-full overflow-hidden opacity-0"
+        className="pointer-events-none fixed top-0 left-0 size-px -translate-x-full overflow-hidden opacity-0"
       />
     </PlayerContext.Provider>
   );

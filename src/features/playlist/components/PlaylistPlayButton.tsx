@@ -28,9 +28,9 @@ export function PlaylistPlayButton({
       type="button"
       onClick={() => play(firstSong, playlistId, playlistTitle, songs)}
       aria-label="再生"
-      className="bg-brand active:bg-brand/80 flex h-14 w-14 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
+      className="bg-brand active:bg-brand/80 flex size-14 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
     >
-      <Play className="ml-1 h-6 w-6" fill="currentColor" />
+      <Play className="ml-1 size-6" fill="currentColor" />
     </button>
   );
 }

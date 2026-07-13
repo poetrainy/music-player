@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { cva } from "class-variance-authority";
 import {
   ArrowLeft,
   PanelRightClose,
@@ -13,9 +14,18 @@ import {
   SkipForward,
 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { formatPlaybackTime } from "@/features/player/library";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+
+const cvaSongDetailToggleIcon = cva("", {
+  variants: {
+    isActive: {
+      true: "text-brand",
+      false: "text-zinc-400",
+    },
+  },
+});
 
 export function SongDetailComponent() {
   const {
@@ -49,9 +59,9 @@ export function SongDetailComponent() {
         <Link
           href={`/playlists/${playlistId}`}
           aria-label="リストに戻る"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/15"
+          className="flex size-9 shrink-0 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/15"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="size-5" />
         </Link>
       </div>
       <div className="mb-2 hidden items-center justify-end md:flex">
@@ -61,7 +71,7 @@ export function SongDetailComponent() {
           aria-label="プレイヤーを閉じる"
           className="text-zinc-400"
         >
-          <PanelRightClose className="h-5 w-5" />
+          <PanelRightClose className="size-5" />
         </IconButton>
       </div>
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
@@ -104,9 +114,9 @@ export function SongDetailComponent() {
             type="button"
             onClick={toggleShuffle}
             aria-label={isShuffled ? "シャッフル: オン" : "シャッフル: オフ"}
-            className={isShuffled ? "text-brand" : "text-zinc-400"}
+            className={cvaSongDetailToggleIcon({ isActive: isShuffled })}
           >
-            <Shuffle className="h-5 w-5" />
+            <Shuffle className="size-5" />
           </IconButton>
           {hasAdjacentSong && (
             <IconButton
@@ -115,19 +125,19 @@ export function SongDetailComponent() {
               aria-label="前の曲"
               className="text-foreground"
             >
-              <SkipBack className="h-6 w-6" fill="currentColor" />
+              <SkipBack className="size-6" fill="currentColor" />
             </IconButton>
           )}
           <button
             type="button"
             onClick={togglePlayback}
             aria-label={isPlaying ? "一時停止" : "再生"}
-            className="bg-brand active:bg-brand/80 flex h-16 w-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
+            className="bg-brand active:bg-brand/80 flex size-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
           >
             {isPlaying ? (
-              <Pause className="h-7 w-7" fill="currentColor" />
+              <Pause className="size-7" fill="currentColor" />
             ) : (
-              <Play className="ml-1 h-7 w-7" fill="currentColor" />
+              <Play className="ml-1 size-7" fill="currentColor" />
             )}
           </button>
           {hasAdjacentSong && (
@@ -137,7 +147,7 @@ export function SongDetailComponent() {
               aria-label="次の曲"
               className="text-foreground"
             >
-              <SkipForward className="h-6 w-6" fill="currentColor" />
+              <SkipForward className="size-6" fill="currentColor" />
             </IconButton>
           )}
           <IconButton
@@ -150,12 +160,14 @@ export function SongDetailComponent() {
                   ? "リピート: 全曲"
                   : "リピート: 1曲"
             }
-            className={repeatMode === "off" ? "text-zinc-400" : "text-brand"}
+            className={cvaSongDetailToggleIcon({
+              isActive: repeatMode !== "off",
+            })}
           >
             {repeatMode === "one" ? (
-              <Repeat1 className="h-5 w-5" />
+              <Repeat1 className="size-5" />
             ) : (
-              <Repeat className="h-5 w-5" />
+              <Repeat className="size-5" />
             )}
           </IconButton>
         </div>

@@ -15,6 +15,7 @@ const LARGE_THUMBNAIL_QUALITIES = [
   "mqdefault",
   "default",
 ] as const;
+type LargeThumbnailQuality = (typeof LARGE_THUMBNAIL_QUALITIES)[number];
 
 const SMALL_THUMBNAIL_QUALITIES = [
   "mqdefault",
@@ -22,6 +23,7 @@ const SMALL_THUMBNAIL_QUALITIES = [
   "sddefault",
   "maxresdefault",
 ] as const;
+type SmallThumbnailQuality = (typeof SMALL_THUMBNAIL_QUALITIES)[number];
 
 export const SONG_THUMBNAIL_IMAGE_SIZES = ["8rem", "24rem"] as const;
 export type SongThumbnailImageSize =
@@ -57,7 +59,9 @@ export function SongThumbnail({
     setQualityIndex((index) => index + 1);
   };
 
-  const thumbnailQualities =
+  const thumbnailQualities: readonly (
+    LargeThumbnailQuality | SmallThumbnailQuality
+  )[] =
     size === "large" ? LARGE_THUMBNAIL_QUALITIES : SMALL_THUMBNAIL_QUALITIES;
   const isLastFallback = qualityIndex === thumbnailQualities.length - 1;
   const defaultSizes: SongThumbnailImageSize =
@@ -66,8 +70,8 @@ export function SongThumbnail({
 
   if (hasFailed) {
     return (
-      <div className="bg-surface-elevated flex h-full w-full items-center justify-center">
-        <Music className="h-1/2 w-1/2 text-zinc-500" />
+      <div className="bg-surface-elevated flex size-full items-center justify-center">
+        <Music className="size-1/2 text-zinc-500" />
       </div>
     );
   }

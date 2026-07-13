@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cva } from "class-variance-authority";
 import { logout } from "@/features/auth/api";
 import { QuotaUsage, User } from "@/features/user/entity";
 
@@ -7,12 +8,27 @@ interface Props {
   user: User;
 }
 
+type Level = "danger" | "warning" | "normal";
+
+const cvaAccountQuotaFill = cva(
+  "h-full rounded-full transition-[width] duration-500",
+  {
+    variants: {
+      level: {
+        danger: "bg-red-500",
+        warning: "bg-amber-500",
+        normal: "bg-brand",
+      },
+    },
+  },
+);
+
 export function AccountComponent({ quota, user }: Props) {
   const ratio =
     quota.totalUnits > 0 ? Math.min(quota.usedUnits / quota.totalUnits, 1) : 0;
   const ratioPercent = Math.round(ratio * 100);
-  const fillColorClassName =
-    ratio >= 0.9 ? "bg-red-500" : ratio >= 0.7 ? "bg-amber-500" : "bg-brand";
+  const level: Level =
+    ratio >= 0.9 ? "danger" : ratio >= 0.7 ? "warning" : "normal";
   const resetAtLabel = new Intl.DateTimeFormat("ja-JP", {
     month: "numeric",
     day: "numeric",
@@ -23,7 +39,7 @@ export function AccountComponent({ quota, user }: Props) {
   return (
     <div className="flex min-h-[calc(100dvh-11rem)] flex-col gap-8">
       <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-        <div className="relative h-28 w-28 overflow-hidden rounded-full shadow-lg shadow-black/40">
+        <div className="relative size-28 overflow-hidden rounded-full shadow-lg shadow-black/40">
           <Image
             src={user.avatarUrl}
             alt={user.name}
@@ -36,7 +52,7 @@ export function AccountComponent({ quota, user }: Props) {
           <p className="text-foreground text-xl font-bold">{user.name}</p>
           <p className="text-sm text-zinc-400">{user.email}</p>
         </div>
-        <div className="flex w-full max-w-sm flex-col gap-2 text-left pt-6">
+        <div className="flex w-full max-w-sm flex-col gap-2 pt-6 text-left">
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>APIリクエスト使用量</span>
             <span>
@@ -46,7 +62,7 @@ export function AccountComponent({ quota, user }: Props) {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className={`h-full rounded-full transition-[width] duration-500 ${fillColorClassName}`}
+              className={cvaAccountQuotaFill({ level })}
               style={{ width: `${ratioPercent}%` }}
             />
           </div>

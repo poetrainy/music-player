@@ -61,7 +61,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
           aria-label="保存"
           className="text-brand"
         >
-          <Check className="h-5 w-5" />
+          <Check className="size-5" />
         </IconButton>
         <IconButton
           type="button"
@@ -70,7 +70,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
           aria-label="キャンセル"
           className="text-zinc-400"
         >
-          <X className="h-5 w-5" />
+          <X className="size-5" />
         </IconButton>
       </form>
     );
@@ -87,7 +87,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
         aria-label="プレイリスト名を編集"
         className="text-zinc-400"
       >
-        <Pencil className="h-4 w-4" />
+        <Pencil className="size-4" />
       </IconButton>
     </div>
   );

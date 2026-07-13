@@ -16,7 +16,7 @@ interface Props {
 const cvaPlaylistListComponent = cva("", {
   variants: {
     viewMode: {
-      grid: "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4",
+      grid: "grid grid-cols-2 gap-2 md:gap-4 sm:grid-cols-3 md:grid-cols-4",
       list: "flex flex-col gap-1",
     },
   },

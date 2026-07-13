@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { cva } from "class-variance-authority";
 
 interface Props {
   children: ReactNode;
@@ -9,17 +10,28 @@ interface Props {
 
 const STROKE_WIDTH = 3;
 
+type Level = "danger" | "warning" | "normal";
+
+const cvaQuotaRingProgress = cva(
+  "stroke-current transition-[stroke-dashoffset] duration-500",
+  {
+    variants: {
+      level: {
+        danger: "text-red-500",
+        warning: "text-amber-500",
+        normal: "text-brand",
+      },
+    },
+  },
+);
+
 export function QuotaRing({ children, size, totalUnits, usedUnits }: Props) {
   const ratio = totalUnits > 0 ? Math.min(usedUnits / totalUnits, 1) : 0;
   const radius = (size - STROKE_WIDTH) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - ratio);
-  const fillColorClassName =
-    ratio >= 0.9
-      ? "text-red-500"
-      : ratio >= 0.7
-        ? "text-amber-500"
-        : "text-brand";
+  const level: Level =
+    ratio >= 0.9 ? "danger" : ratio >= 0.7 ? "warning" : "normal";
 
   return (
     <div
@@ -48,7 +60,7 @@ export function QuotaRing({ children, size, totalUnits, usedUnits }: Props) {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}
-          className={`stroke-current transition-[stroke-dashoffset] duration-500 ${fillColorClassName}`}
+          className={cvaQuotaRingProgress({ level })}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">

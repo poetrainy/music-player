@@ -17,7 +17,7 @@ export function SignInComponent() {
           type="submit"
           className="flex items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black active:bg-zinc-300"
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5">
+          <svg viewBox="0 0 24 24" className="size-5">
             <path
               fill="#4285F4"
               d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z"

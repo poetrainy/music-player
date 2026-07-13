@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { usePlayer } from "@/features/player/hook";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 
 export function PlayerMiniPlayer() {
   const {
@@ -49,7 +49,7 @@ export function PlayerMiniPlayer() {
           onClick={() => setActiveMobileView("player")}
           className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70"
         >
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+          <div className="relative size-10 shrink-0 overflow-hidden rounded">
             <SongThumbnail
               key={currentSong.id}
               songId={currentSong.id}
@@ -75,19 +75,19 @@ export function PlayerMiniPlayer() {
                 aria-label="前の曲"
                 className="text-foreground"
               >
-                <SkipBack className="h-5 w-5" fill="currentColor" />
+                <SkipBack className="size-5" fill="currentColor" />
               </IconButton>
             )}
             <button
               type="button"
               onClick={togglePlayback}
               aria-label={isPlaying ? "一時停止" : "再生"}
-              className="bg-brand active:bg-brand/80 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-black"
+              className="bg-brand active:bg-brand/80 flex size-9 shrink-0 items-center justify-center rounded-full text-black"
             >
               {isPlaying ? (
-                <Pause className="h-4 w-4" fill="currentColor" />
+                <Pause className="size-4" fill="currentColor" />
               ) : (
-                <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
+                <Play className="ml-0.5 size-4" fill="currentColor" />
               )}
             </button>
             {hasAdjacentSong && (
@@ -97,7 +97,7 @@ export function PlayerMiniPlayer() {
                 aria-label="次の曲"
                 className="text-foreground"
               >
-                <SkipForward className="h-5 w-5" fill="currentColor" />
+                <SkipForward className="size-5" fill="currentColor" />
               </IconButton>
             )}
           </>
