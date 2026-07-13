@@ -56,7 +56,9 @@ export const getPlaylists = async (): Promise<Playlist[]> => {
     { part: "snippet", mine: "true", maxResults: "50" },
   );
 
-  const summaries = (data.items ?? []).flatMap(toPlaylistSummary);
+  const summaries = (data.items ?? [])
+    .flatMap(toPlaylistSummary)
+    .sort((a, b) => a.title.localeCompare(b.title, "ja"));
 
   return Promise.all(
     summaries.map(async (summary) => ({
