@@ -52,9 +52,7 @@ export function PlayerMiniPlayer() {
             <YoutubeThumbnail
               videoId={currentSong.id}
               alt={currentSong.title}
-              fill
-              sizes="2.5rem"
-              className="scale-125 object-cover"
+              size="small"
             />
           </div>
           <div className="flex min-w-0 flex-col">

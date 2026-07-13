@@ -68,9 +68,7 @@ export function SongDetailComponent() {
           <YoutubeThumbnail
             videoId={currentSong.id}
             alt={currentSong.title}
-            fill
-            sizes="24rem"
-            className="object-cover"
+            size="large"
             preload
           />
         </div>

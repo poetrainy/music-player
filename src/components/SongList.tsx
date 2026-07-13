@@ -61,10 +61,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
                 <YoutubeThumbnail
                   videoId={song.id}
                   alt={song.title}
-                  fill
-                  sizes="3rem"
-                  quality={90}
-                  className="scale-125 object-cover"
+                  size="small"
                 />
               </div>
               <div className="flex min-w-0 flex-col">

@@ -134,9 +134,8 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                 <YoutubeThumbnail
                   videoId={id}
                   alt={title}
-                  fill
-                  sizes="3rem"
-                  className="scale-125 object-cover"
+                  size="small"
+                  preload
                 />
               </div>
               <div className="flex min-w-0 flex-1 flex-col">

@@ -1,10 +1,14 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Music } from "lucide-react";
 import { cn } from "@/library";
 
-const THUMBNAIL_QUALITIES = [
+export const YOUTUBE_THUMBNAIL_SIZES = ["small", "large"] as const;
+export type YoutubeThumbnailSize = (typeof YOUTUBE_THUMBNAIL_SIZES)[number];
+
+const LARGE_THUMBNAIL_QUALITIES = [
   "maxresdefault",
   "sddefault",
   "hqdefault",
@@ -12,42 +16,70 @@ const THUMBNAIL_QUALITIES = [
   "default",
 ] as const;
 
-const MIN_ACCEPTABLE_THUMBNAIL_WIDTH = 300;
+const SMALL_THUMBNAIL_QUALITIES = [
+  "mqdefault",
+  "hqdefault",
+  "sddefault",
+  "maxresdefault",
+] as const;
 
 interface Props extends Omit<ImageProps, "src" | "onError" | "onLoad"> {
   videoId: string;
+  size: YoutubeThumbnailSize;
 }
 
 export function YoutubeThumbnail({
   videoId,
   alt,
   className,
+  size,
+  sizes,
+  fill,
   ...imageProps
 }: Props) {
   const [qualityIndex, setQualityIndex] = useState(0);
-  const isLastFallback = qualityIndex === THUMBNAIL_QUALITIES.length - 1;
+  const [hasFailed, setHasFailed] = useState(false);
+
+  const thumbnailQualities =
+    size === "large" ? LARGE_THUMBNAIL_QUALITIES : SMALL_THUMBNAIL_QUALITIES;
+  const isLastFallback = qualityIndex === thumbnailQualities.length - 1;
+  const defaultSizes = size === "large" ? "24rem" : "8rem";
+
+  useEffect(() => {
+    setQualityIndex(0);
+    setHasFailed(false);
+  }, [videoId]);
 
   const advanceFallback = () => {
+    if (isLastFallback) {
+      setHasFailed(true);
+      return;
+    }
+
     setQualityIndex((index) =>
-      Math.min(index + 1, THUMBNAIL_QUALITIES.length - 1),
+      Math.min(index + 1, thumbnailQualities.length - 1),
     );
   };
+
+  const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/${thumbnailQualities[qualityIndex]}.jpg`;
+
+  if (hasFailed) {
+    return (
+      <div className="bg-surface-elevated flex h-full w-full items-center justify-center">
+        <Music className="h-1/2 w-1/2 text-zinc-500" />
+      </div>
+    );
+  }
 
   return (
     <Image
       {...imageProps}
-      src={`https://i.ytimg.com/vi/${videoId}/${THUMBNAIL_QUALITIES[qualityIndex]}.jpg`}
+      src={thumbnailUrl}
       alt={alt}
-      className={cn(className)}
+      sizes={sizes ?? defaultSizes}
+      fill={fill !== undefined ? fill : true}
+      className={cn("object-cover", className)}
       onError={advanceFallback}
-      onLoad={(event) => {
-        if (
-          !isLastFallback &&
-          event.currentTarget.naturalWidth < MIN_ACCEPTABLE_THUMBNAIL_WIDTH
-        ) {
-          advanceFallback();
-        }
-      }}
     />
   );
 }
