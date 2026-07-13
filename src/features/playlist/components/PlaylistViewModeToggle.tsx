@@ -1,41 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { LayoutGrid, List } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { PlaylistCardViewMode } from "@/features/playlist/components/PlaylistCard";
 
-const VIEW_MODE_STORAGE_KEY = "playlist-view-mode";
-const DEFAULT_VIEW_MODE: PlaylistCardViewMode = "grid";
-
 interface Props {
   onChange: (viewMode: PlaylistCardViewMode) => void;
+  viewMode: PlaylistCardViewMode;
 }
 
-export function PlaylistViewModeToggle({ onChange }: Props) {
-  const [viewMode, setViewMode] =
-    useState<PlaylistCardViewMode>(DEFAULT_VIEW_MODE);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-
-    if (stored !== "grid" && stored !== "list") {
-      return;
-    }
-
-    // NOTE: localStorage はクライアントでしか参照できないため、マウント後に同期してSSRとのハイドレーション不整合を避けている
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setViewMode(stored);
-    onChange(stored);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+export function PlaylistViewModeToggle({ onChange, viewMode }: Props) {
   const toggleViewMode = () => {
-    const nextMode = viewMode === "grid" ? "list" : "grid";
-
-    setViewMode(nextMode);
-    localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextMode);
-    onChange(nextMode);
+    onChange(viewMode === "grid" ? "list" : "grid");
   };
 
   return (

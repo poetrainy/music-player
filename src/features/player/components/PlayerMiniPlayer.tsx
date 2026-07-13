@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
-import { PlayerPictureInPicture } from "@/features/player/components/PlayerPictureInPicture";
 import { PlayerVolumeControl } from "@/features/player/components/PlayerVolumeControl";
 import { usePlayer } from "@/features/player/hook";
+import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 
 export function PlayerMiniPlayer() {
   const {
@@ -61,7 +61,12 @@ export function PlayerMiniPlayer() {
       />
       <div className="mx-auto flex max-w-300 items-center gap-4 px-4 py-2">
         <div className="relative size-10 shrink-0 overflow-hidden rounded">
-          <PlayerPictureInPicture />
+          <SongThumbnail
+            key={currentSong.id}
+            songId={currentSong.id}
+            alt={currentSong.title}
+            size="small"
+          />
         </div>
         {playlistId ? (
           <Link
