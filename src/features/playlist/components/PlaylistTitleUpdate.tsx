@@ -53,7 +53,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
           onChange={(event) => setValue(event.target.value)}
           disabled={isUpdating}
           autoFocus
-          className="text-foreground bg-surface-elevated min-w-0 rounded-md px-3 py-1 text-center text-2xl font-extrabold tracking-tight outline-none"
+          className="text-foreground bg-surface-elevated w-full rounded-md px-3 py-1 text-center text-2xl font-extrabold tracking-tight outline-none"
         />
         <IconButton
           type="submit"
@@ -77,7 +77,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center gap-2">
       <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
         {title}
       </h1>

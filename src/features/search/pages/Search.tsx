@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
+import { usePlayer } from "@/features/player/hook";
 import {
   deletePlaylistSong,
   registerPlaylistSong,
 } from "@/features/playlist/api";
 import { Playlist } from "@/features/playlist/entity";
-import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+import { SongSummary } from "@/features/song/components/SongSummary";
 import { Song } from "@/features/song/entity";
 
 interface Props {
@@ -18,15 +19,15 @@ interface Props {
 }
 
 export function SearchComponent({ playlists, query, songs }: Props) {
+  const { currentSong, play } = usePlayer();
   const router = useRouter();
   const [isSearchPending, startSearchTransition] = useTransition();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(
     playlists[0]?.id ?? "",
   );
   const [pendingSongId, setPendingSongId] = useState<string | null>(null);
-  const [playlistItemIdsBySongId, setPlaylistItemIdsBySongId] = useState<
-    Record<string, string>
-  >({});
+  const [sessionPlaylistItemIdsBySongId, setSessionPlaylistItemIdsBySongId] =
+    useState<Record<string, string | null>>({});
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,14 +54,14 @@ export function SearchComponent({ playlists, query, songs }: Props) {
     const playlistItemId = await registerPlaylistSong(formData);
 
     setPendingSongId(null);
-    setPlaylistItemIdsBySongId((previous) => ({
+    setSessionPlaylistItemIdsBySongId((previous) => ({
       ...previous,
       [songId]: playlistItemId,
     }));
   };
 
   const handleDeleteSong = async (songId: string) => {
-    const playlistItemId = playlistItemIdsBySongId[songId];
+    const playlistItemId = getPlaylistItemId(songId);
 
     if (!selectedPlaylistId || !playlistItemId) {
       return;
@@ -75,13 +76,26 @@ export function SearchComponent({ playlists, query, songs }: Props) {
     await deletePlaylistSong(formData);
 
     setPendingSongId(null);
-    setPlaylistItemIdsBySongId((previous) => {
-      const next = { ...previous };
+    setSessionPlaylistItemIdsBySongId((previous) => ({
+      ...previous,
+      [songId]: null,
+    }));
+  };
 
-      delete next[songId];
+  const selectedPlaylist = playlists.find(
+    (playlist) => playlist.id === selectedPlaylistId,
+  );
 
-      return next;
-    });
+  const getPlaylistItemId = (songId: string): string | null => {
+    if (songId in sessionPlaylistItemIdsBySongId) {
+      return sessionPlaylistItemIdsBySongId[songId];
+    }
+
+    const existingSong = selectedPlaylist?.songs.find(
+      (song) => song.id === songId,
+    );
+
+    return existingSong?.playlistItemId ?? null;
   };
 
   return (
@@ -111,7 +125,10 @@ export function SearchComponent({ playlists, query, songs }: Props) {
       {!!playlists.length && (
         <select
           value={selectedPlaylistId}
-          onChange={(event) => setSelectedPlaylistId(event.target.value)}
+          onChange={(event) => {
+            setSelectedPlaylistId(event.target.value);
+            setSessionPlaylistItemIdsBySongId({});
+          }}
           aria-label="プレイリストを選択"
           className="bg-surface-elevated text-foreground w-full rounded-md px-3 py-2 text-sm"
         >
@@ -128,44 +145,49 @@ export function SearchComponent({ playlists, query, songs }: Props) {
         </p>
       ) : (
         <ul className="flex flex-col">
-          {songs.map(({ id, title, artist }) => (
-            <li key={id} className="flex items-center gap-3 p-2">
-              <div className="bg-surface-elevated relative size-12 shrink-0 overflow-hidden rounded">
-                <SongThumbnail songId={id} alt={title} size="small" preload />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-foreground truncate text-sm font-medium">
-                  {title}
-                </p>
-                <p className="truncate text-xs text-zinc-400">{artist}</p>
-              </div>
-              {selectedPlaylistId && (
+          {songs.map((song) => {
+            const playlistItemId = getPlaylistItemId(song.id);
+
+            return (
+              <li key={song.id} className="flex items-center gap-3 p-2">
                 <button
                   type="button"
-                  onClick={() =>
-                    playlistItemIdsBySongId[id]
-                      ? handleDeleteSong(id)
-                      : handleAddSong(id)
-                  }
-                  disabled={pendingSongId === id}
-                  aria-label={
-                    playlistItemIdsBySongId[id]
-                      ? "プレイリストから削除"
-                      : "プレイリストに追加"
-                  }
-                  className="text-brand active:text-brand/70 flex size-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
+                  onClick={() => play(song, null, "検索結果", [])}
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left"
                 >
-                  {pendingSongId === id ? (
-                    <Loader2 className="size-5 animate-spin" />
-                  ) : playlistItemIdsBySongId[id] ? (
-                    <Check className="size-5" />
-                  ) : (
-                    "追加"
-                  )}
+                  <SongSummary
+                    song={song}
+                    isActive={currentSong?.id === song.id}
+                  />
                 </button>
-              )}
-            </li>
-          ))}
+                {selectedPlaylistId && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      playlistItemId
+                        ? handleDeleteSong(song.id)
+                        : handleAddSong(song.id)
+                    }
+                    disabled={pendingSongId === song.id}
+                    aria-label={
+                      playlistItemId
+                        ? "プレイリストから削除"
+                        : "プレイリストに追加"
+                    }
+                    className="text-brand active:text-brand/70 flex size-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
+                  >
+                    {pendingSongId === song.id ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : playlistItemId ? (
+                      <Check className="size-5" />
+                    ) : (
+                      "追加"
+                    )}
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

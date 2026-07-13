@@ -15,7 +15,7 @@ export function PlaylistDetailComponent({ playlist }: Props) {
         <div className="w-48">
           <PlaylistThumbnailCollage songs={playlist.songs} size="lg" />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="flex w-full flex-col gap-1">
           <p className="text-xs font-semibold text-zinc-400">プレイリスト</p>
           <PlaylistTitleUpdate
             playlistId={playlist.id}

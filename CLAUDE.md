@@ -68,7 +68,7 @@ src/
 - `layouts`：複数ページ・複数コンポーネント間で共有するレイアウト用コンポーネント
 - `library.ts`：ユーティリティ
 - `mocks`：モックデータ・モック API 実装（`src/features` 直下には存在しない）
-- `pages`：feature 固有の表示コンポーネント（`src` 直下には存在しない）
+- `pages`：feature 固有の表示コンポーネント（`src` 直下には存在しない）。`src/features/**/pages` 配下のコンポーネントは、プロジェクトルート直下の `app` 配下のファイルからのみ import すること
 - `providers`：React Context の Provider コンポーネント
 - `tests`：テストコード。テスト対象のファイルと同じディレクトリ構成を取る（`src/features` 直下には存在しない）
 
@@ -205,6 +205,8 @@ function Component() {
 
 ### 命名規則
 
+- boolean の変数・props 名には `is`・`has` などの接頭辞を付けること
+  - 但し、`open`・`disabled`・`required`・`checked` など、HTML 属性名としてそのまま意味が通じるものは接頭辞をつけないこと（このプロジェクトで実際に HTML 属性と 1:1 対応する用途で使う名前に限る。新たに追加する名前が必要な場合はホワイトリストに追記すること）
 - `src/features/**/pages` のコンポーネント名は `**Component` とすること
 - ファイル内で代表的に export するコンポーネント名は、ファイル名と一致していること
   - 例: `Course.tsx` → `CourseComponent`（`pages` 配下は上記の `**Component` ルールを優先）
@@ -236,8 +238,10 @@ function Component() {
 - Tailwind のクラスで表現できない箇所（`next/image` の `sizes` 属性など）も、px ではなく rem で指定すること
 - 縦横（width・height）が同じ値になる場合は `w-*`・`h-*` を個別に指定せず `size-*` を使用すること
 - padding・margin も同様に、上下左右で同じ値になる場合はまとめて指定すること（例: `px-4 py-4` ではなく `p-4`）
-- className を条件によって分岐させる場合は `cva` を使用すること
-- className を複数結合する場合は `cn` を使用し、テンプレートリテラルや文字列結合 (`+`) を使用しないこと
+- 動的な className 生成は `cva`・`cn` の利用に限ること
+  - className を条件によって分岐させる場合（三項演算子・`&&` など）は `cva` を使用すること。`cn` の引数に条件分岐を含めないこと
+  - `cn` は、確定済みの className 文字列同士を結合する場合（コンポーネント固有のベースクラスと props で渡された `className` の結合など）にのみ使用すること
+  - テンプレートリテラルや文字列結合 (`+`)、独自の className 生成処理は使用しないこと
 
 ### アクセシビリティ
 

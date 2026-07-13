@@ -1,9 +1,21 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { cva } from "class-variance-authority";
+import { PlayerSongDetail } from "@/features/player/components/PlayerSongDetail";
 import { usePlayer } from "@/features/player/hook";
-import { SongDetailComponent } from "@/features/player/pages/SongDetail";
-import { cn } from "@/library";
+
+const cvaPlayerSongDetailPanelContainer = cva(
+  "md:bg-surface-elevated hidden w-full overflow-hidden md:sticky md:top-28 md:max-w-sm md:shrink-0 md:rounded-xl",
+  {
+    variants: {
+      isActive: {
+        true: "md:block",
+        false: "md:hidden",
+      },
+    },
+  },
+);
 
 export function PlayerSongDetailPanel() {
   const { activeMobileView, currentSong, playlistId } = usePlayer();
@@ -13,10 +25,6 @@ export function PlayerSongDetailPanel() {
     !!currentSong &&
     !!playlistId &&
     pathname.startsWith(`/playlists/${playlistId}`);
-  const isOnExactSongPage =
-    !!currentSong &&
-    !!playlistId &&
-    pathname === `/playlists/${playlistId}/${currentSong.id}`;
 
   if (!hasPlayer) {
     return null;
@@ -24,13 +32,11 @@ export function PlayerSongDetailPanel() {
 
   return (
     <div
-      className={cn(
-        "md:bg-surface-elevated w-full overflow-hidden md:sticky md:top-24 md:max-w-sm md:shrink-0 md:rounded-xl",
-        isOnExactSongPage ? "block" : "hidden",
-        activeMobileView === "player" ? "md:block" : "md:hidden",
-      )}
+      className={cvaPlayerSongDetailPanelContainer({
+        isActive: activeMobileView === "player",
+      })}
     >
-      <SongDetailComponent />
+      <PlayerSongDetail />
     </div>
   );
 }

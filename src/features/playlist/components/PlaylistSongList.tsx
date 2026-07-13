@@ -8,7 +8,7 @@ import { IconButton } from "@/components/IconButton";
 import { usePlayer } from "@/features/player/hook";
 import { deletePlaylistSong } from "@/features/playlist/api";
 import { PlaylistSong } from "@/features/playlist/entity";
-import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+import { SongSummary } from "@/features/song/components/SongSummary";
 
 interface Props {
   playlistId: string;
@@ -21,15 +21,6 @@ const cvaPlaylistSongListItem = cva("flex items-center gap-3 rounded-md px-2", {
     isCurrentSong: {
       true: "bg-surface-elevated",
       false: "hover:bg-surface-elevated active:bg-surface-elevated",
-    },
-  },
-});
-
-const cvaPlaylistSongListTitle = cva("truncate text-sm font-medium", {
-  variants: {
-    isCurrentSong: {
-      true: "text-brand",
-      false: "text-foreground",
     },
   },
 });
@@ -76,15 +67,7 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
               <span className="w-4 shrink-0 text-right text-sm text-zinc-500">
                 {index + 1}
               </span>
-              <div className="bg-surface-elevated relative size-12 shrink-0 overflow-hidden rounded">
-                <SongThumbnail songId={song.id} alt={song.title} size="small" />
-              </div>
-              <div className="flex min-w-0 flex-col">
-                <p className={cvaPlaylistSongListTitle({ isCurrentSong })}>
-                  {song.title}
-                </p>
-                <p className="truncate text-xs text-zinc-400">{song.artist}</p>
-              </div>
+              <SongSummary song={song} isActive={isCurrentSong} />
             </button>
             <div className="relative shrink-0">
               <IconButton

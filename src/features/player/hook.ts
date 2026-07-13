@@ -118,7 +118,7 @@ interface PlayerContextValue {
   ) => void;
   play: (
     song: Song,
-    playlistId: string,
+    playlistId: string | null,
     playlistTitle: string,
     songs: Song[],
   ) => void;
@@ -346,7 +346,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const play = useCallback(
     (
       song: Song,
-      nextPlaylistId: string,
+      nextPlaylistId: string | null,
       nextPlaylistTitle: string,
       nextSongs: Song[],
     ) => {
@@ -356,12 +356,14 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setCurrentSong((previous) =>
         previous?.id === song.id ? previous : song,
       );
-      setActiveMobileView("player");
-      window.history.replaceState(
-        null,
-        "",
-        `/playlists/${nextPlaylistId}/${song.id}`,
-      );
+
+      if (nextPlaylistId) {
+        window.history.replaceState(
+          null,
+          "",
+          `/playlists/${nextPlaylistId}/${song.id}`,
+        );
+      }
     },
     [],
   );

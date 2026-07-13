@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { cva } from "class-variance-authority";
 import {
-  ArrowLeft,
-  PanelRightClose,
   Pause,
   Play,
   Repeat,
@@ -12,13 +10,14 @@ import {
   Shuffle,
   SkipBack,
   SkipForward,
+  X,
 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { usePlayer } from "@/features/player/hook";
 import { formatPlaybackTime } from "@/features/player/library";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 
-const cvaSongDetailToggleIcon = cva("", {
+const cvaPlayerSongDetailToggleIcon = cva("", {
   variants: {
     isActive: {
       true: "text-brand",
@@ -27,7 +26,7 @@ const cvaSongDetailToggleIcon = cva("", {
   },
 });
 
-export function SongDetailComponent() {
+export function PlayerSongDetail() {
   const {
     currentSong,
     currentTime,
@@ -49,33 +48,24 @@ export function SongDetailComponent() {
 
   const hasAdjacentSong = songs.length > 1;
 
-  if (!currentSong || !playlistId) {
+  if (!currentSong) {
     return null;
   }
 
   return (
     <div className="text-foreground md:from-surface-elevated md:to-surface flex h-full min-h-0 flex-col md:bg-linear-to-b md:p-6">
-      <div className="mb-2 flex items-center justify-start md:hidden">
-        <Link
-          href={`/playlists/${playlistId}`}
-          aria-label="リストに戻る"
-          className="flex size-9 shrink-0 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-white/10 active:bg-white/15"
-        >
-          <ArrowLeft className="size-5" />
-        </Link>
-      </div>
-      <div className="mb-2 hidden items-center justify-end md:flex">
+      <div className="mb-2 flex items-center justify-end md:hidden">
         <IconButton
           type="button"
           onClick={() => setActiveMobileView("list")}
-          aria-label="プレイヤーを閉じる"
+          aria-label="閉じる"
           className="text-zinc-400"
         >
-          <PanelRightClose className="size-5" />
+          <X className="size-5" />
         </IconButton>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
-        <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 pb-11 md:p-0">
+        <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60 md:max-w-full">
           <SongThumbnail
             key={currentSong.id}
             songId={currentSong.id}
@@ -85,12 +75,15 @@ export function SongDetailComponent() {
           />
         </div>
         <div className="flex flex-col items-center gap-1 text-center">
-          <Link
-            href={`/playlists/${playlistId}`}
-            className="text-xs font-semibold text-zinc-400 active:text-zinc-300"
-          >
-            {playlistTitle}
-          </Link>
+          {!!playlistId && (
+            <Link
+              href={`/playlists/${playlistId}`}
+              onClick={() => setActiveMobileView("list")}
+              className="text-xs font-semibold text-zinc-400 active:text-zinc-300"
+            >
+              {playlistTitle}
+            </Link>
+          )}
           <p className="text-xl font-bold">{currentSong.title}</p>
           <p className="text-sm text-zinc-400">{currentSong.artist}</p>
         </div>
@@ -110,14 +103,18 @@ export function SongDetailComponent() {
           </div>
         </div>
         <div className="flex items-center gap-5">
-          <IconButton
-            type="button"
-            onClick={toggleShuffle}
-            aria-label={isShuffled ? "シャッフル: オン" : "シャッフル: オフ"}
-            className={cvaSongDetailToggleIcon({ isActive: isShuffled })}
-          >
-            <Shuffle className="size-5" />
-          </IconButton>
+          {!!playlistId && (
+            <IconButton
+              type="button"
+              onClick={toggleShuffle}
+              aria-label={isShuffled ? "シャッフル: オン" : "シャッフル: オフ"}
+              className={cvaPlayerSongDetailToggleIcon({
+                isActive: isShuffled,
+              })}
+            >
+              <Shuffle className="size-5" />
+            </IconButton>
+          )}
           {hasAdjacentSong && (
             <IconButton
               type="button"
@@ -150,26 +147,28 @@ export function SongDetailComponent() {
               <SkipForward className="size-6" fill="currentColor" />
             </IconButton>
           )}
-          <IconButton
-            type="button"
-            onClick={cycleRepeatMode}
-            aria-label={
-              repeatMode === "off"
-                ? "リピート: オフ"
-                : repeatMode === "all"
-                  ? "リピート: 全曲"
-                  : "リピート: 1曲"
-            }
-            className={cvaSongDetailToggleIcon({
-              isActive: repeatMode !== "off",
-            })}
-          >
-            {repeatMode === "one" ? (
-              <Repeat1 className="size-5" />
-            ) : (
-              <Repeat className="size-5" />
-            )}
-          </IconButton>
+          {!!playlistId && (
+            <IconButton
+              type="button"
+              onClick={cycleRepeatMode}
+              aria-label={
+                repeatMode === "off"
+                  ? "リピート: オフ"
+                  : repeatMode === "all"
+                    ? "リピート: 全曲"
+                    : "リピート: 1曲"
+              }
+              className={cvaPlayerSongDetailToggleIcon({
+                isActive: repeatMode !== "off",
+              })}
+            >
+              {repeatMode === "one" ? (
+                <Repeat1 className="size-5" />
+              ) : (
+                <Repeat className="size-5" />
+              )}
+            </IconButton>
+          )}
         </div>
       </div>
     </div>

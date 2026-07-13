@@ -18,6 +18,7 @@ export function PlayerMiniPlayer() {
     playlistTitle,
     playNext,
     playPrevious,
+    seekTo,
     setActiveMobileView,
     songs,
     togglePlayback,
@@ -26,47 +27,70 @@ export function PlayerMiniPlayer() {
 
   const hasAdjacentSong = songs.length > 1;
 
-  if (!currentSong || !playlistId) {
+  if (!currentSong) {
     return null;
   }
 
-  const isOnExactSongPage =
-    pathname === `/playlists/${playlistId}/${currentSong.id}`;
-  const isPanelShowing = activeMobileView === "player" && isOnExactSongPage;
-  const progressRatio = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
+  const hasSidebar =
+    !!playlistId && pathname.startsWith(`/playlists/${playlistId}`);
+  const isSidebarShowing = hasSidebar && activeMobileView === "player";
+  const songInfo = (
+    <>
+      <div className="relative size-10 shrink-0 overflow-hidden rounded">
+        <SongThumbnail
+          key={currentSong.id}
+          songId={currentSong.id}
+          alt={currentSong.title}
+          size="small"
+        />
+      </div>
+      <div className="flex min-w-0 flex-col">
+        <p className="text-foreground truncate text-sm font-medium">
+          {currentSong.title}
+        </p>
+        <p className="truncate text-xs text-zinc-400">
+          {playlistId
+            ? `${currentSong.artist}・${playlistTitle}`
+            : currentSong.artist}
+        </p>
+      </div>
+    </>
+  );
 
   return (
     <div className="bg-surface-elevated fixed inset-x-0 bottom-0 z-50">
-      <div className="bg-foreground/10 h-0.5 w-full">
-        <div
-          className="bg-brand h-full transition-[width] duration-500"
-          style={{ width: `${progressRatio * 100}%` }}
-        />
-      </div>
+      <input
+        type="range"
+        min={0}
+        max={duration || 0}
+        value={currentTime}
+        onChange={(event) => seekTo(Number(event.target.value))}
+        aria-label="再生位置"
+        className="accent-brand m-0 block h-0.5 w-full cursor-pointer"
+      />
       <div className="mx-auto flex max-w-300 items-center gap-3 px-4 py-2">
-        <Link
-          href={`/playlists/${playlistId}/${currentSong.id}`}
+        {playlistId ? (
+          <Link
+            href={`/playlists/${playlistId}/${currentSong.id}`}
+            onClick={() => setActiveMobileView("player")}
+            scroll={false}
+            className="hidden min-w-0 flex-1 items-center gap-3 text-left active:opacity-70 md:flex"
+          >
+            {songInfo}
+          </Link>
+        ) : (
+          <div className="hidden min-w-0 flex-1 items-center gap-3 text-left md:flex">
+            {songInfo}
+          </div>
+        )}
+        <button
+          type="button"
           onClick={() => setActiveMobileView("player")}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left active:opacity-70 md:hidden"
         >
-          <div className="relative size-10 shrink-0 overflow-hidden rounded">
-            <SongThumbnail
-              key={currentSong.id}
-              songId={currentSong.id}
-              alt={currentSong.title}
-              size="small"
-            />
-          </div>
-          <div className="flex min-w-0 flex-col">
-            <p className="text-foreground truncate text-sm font-medium">
-              {currentSong.title}
-            </p>
-            <p className="truncate text-xs text-zinc-400">
-              {currentSong.artist}・{playlistTitle}
-            </p>
-          </div>
-        </Link>
-        {!isPanelShowing && (
+          {songInfo}
+        </button>
+        {!isSidebarShowing && (
           <>
             {hasAdjacentSong && (
               <IconButton
