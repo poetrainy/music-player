@@ -10,9 +10,12 @@ import {
   useState,
 } from "react";
 import {
+  DEFAULT_VOLUME,
   getAdjacentSong,
   loadPlaybackState,
+  loadVolume,
   savePlaybackState,
+  saveVolume,
 } from "@/features/player/library";
 import { Song } from "@/features/song/entity";
 import { SERVICE_NAME } from "@/library";
@@ -21,6 +24,7 @@ interface YoutubePlayer {
   playVideo: () => void;
   pauseVideo: () => void;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  setVolume: (volume: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
   destroy: () => void;
@@ -128,11 +132,14 @@ interface PlayerContextValue {
   playPrevious: () => void;
   repeatMode: RepeatMode;
   restorePlayback: () => void;
+  restoreVolume: () => void;
   seekTo: (seconds: number) => void;
   setActiveMobileView: (view: MobileView) => void;
+  setVolume: (volume: number) => void;
   songs: Song[];
   togglePlayback: () => void;
   toggleShuffle: () => void;
+  volume: number;
 }
 
 export const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -152,6 +159,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const songsRef = useRef<Song[]>([]);
   const repeatModeRef = useRef<RepeatMode>("off");
   const isShuffledRef = useRef(false);
+  const volumeRef = useRef(DEFAULT_VOLUME);
   const goToSongOnEndRef = useRef<(song: Song) => void>(() => {});
   const pendingRestoreTimeRef = useRef<number | null>(null);
   const pendingPlayIntentRef = useRef(false);
@@ -168,6 +176,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeMobileView, setActiveMobileView] = useState<MobileView>("list");
+  const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
 
   useEffect(() => {
     songsRef.current = songs;
@@ -247,6 +256,8 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
             isPlayerReadyRef.current = true;
 
             const player = playerRef.current;
+
+            player?.setVolume(volumeRef.current);
 
             if (restoreTime !== null) {
               player?.seekTo(restoreTime, true);
@@ -436,6 +447,13 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     setCurrentTime(seconds);
   }, []);
 
+  const setVolume = useCallback((nextVolume: number) => {
+    volumeRef.current = nextVolume;
+    setVolumeState(nextVolume);
+    saveVolume(nextVolume);
+    playerRef.current?.setVolume(nextVolume);
+  }, []);
+
   const loadPaused = useCallback(
     (
       song: Song,
@@ -473,6 +491,17 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       stored.currentTime,
     );
   }, [loadPaused, userEmail]);
+
+  const restoreVolume = useCallback(() => {
+    const stored = loadVolume();
+
+    if (stored === null) {
+      return;
+    }
+
+    volumeRef.current = stored;
+    setVolumeState(stored);
+  }, []);
 
   const loadSong = useCallback(
     (
@@ -527,10 +556,13 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     playPrevious,
     repeatMode,
     restorePlayback,
+    restoreVolume,
     seekTo,
     setActiveMobileView,
+    setVolume,
     songs,
     togglePlayback,
     toggleShuffle,
+    volume,
   };
 };

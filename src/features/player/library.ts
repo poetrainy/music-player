@@ -1,5 +1,25 @@
 import { Song } from "@/features/song/entity";
 
+export const DEFAULT_VOLUME = 100;
+
+const VOLUME_STORAGE_KEY = "player-volume";
+
+export const saveVolume = (volume: number): void => {
+  localStorage.setItem(VOLUME_STORAGE_KEY, String(volume));
+};
+
+export const loadVolume = (): number | null => {
+  const raw = localStorage.getItem(VOLUME_STORAGE_KEY);
+
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = Number(raw);
+
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const PLAYBACK_STATE_STORAGE_KEY = "player-playback-state";
 
 export interface StoredPlaybackState {

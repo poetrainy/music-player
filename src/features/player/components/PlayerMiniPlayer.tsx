@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
+import { PlayerVolumeControl } from "@/features/player/components/PlayerVolumeControl";
 import { usePlayer } from "@/features/player/hook";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 
@@ -90,6 +91,7 @@ export function PlayerMiniPlayer() {
         >
           {songInfo}
         </button>
+        <PlayerVolumeControl />
         {!isSidebarShowing && (
           <>
             {hasAdjacentSong && (

@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { usePlayer } from "@/features/player/hook";
 
 export function PlayerPlaybackRestore() {
-  const { restorePlayback } = usePlayer();
+  const { restorePlayback, restoreVolume } = usePlayer();
 
   useEffect(() => {
     restorePlayback();
-  }, [restorePlayback]);
+    restoreVolume();
+  }, [restorePlayback, restoreVolume]);
 
   return null;
 }
