@@ -66,6 +66,7 @@ export function SongDetailComponent() {
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
         <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60">
           <YoutubeThumbnail
+            key={currentSong.id}
             videoId={currentSong.id}
             alt={currentSong.title}
             size="large"
@@ -106,7 +107,7 @@ export function SongDetailComponent() {
           >
             <Shuffle className="h-5 w-5" />
           </IconButton>
-          {hasAdjacentSong ? (
+          {hasAdjacentSong && (
             <IconButton
               type="button"
               onClick={playPrevious}
@@ -115,7 +116,7 @@ export function SongDetailComponent() {
             >
               <SkipBack className="h-6 w-6" fill="currentColor" />
             </IconButton>
-          ) : null}
+          )}
           <button
             type="button"
             onClick={togglePlayback}
@@ -128,7 +129,7 @@ export function SongDetailComponent() {
               <Play className="ml-1 h-7 w-7" fill="currentColor" />
             )}
           </button>
-          {hasAdjacentSong ? (
+          {hasAdjacentSong && (
             <IconButton
               type="button"
               onClick={playNext}
@@ -137,7 +138,7 @@ export function SongDetailComponent() {
             >
               <SkipForward className="h-6 w-6" fill="currentColor" />
             </IconButton>
-          ) : null}
+          )}
           <IconButton
             type="button"
             onClick={cycleRepeatMode}

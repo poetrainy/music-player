@@ -1,11 +1,12 @@
 import { loginWithGoogle } from "@/features/auth/api";
+import { SERVICE_NAME } from "@/library";
 
 export function SignInComponent() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-8 p-6 text-center">
       <div className="flex flex-col gap-2">
         <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
-          YouTube Music Player
+          {SERVICE_NAME}
         </h1>
         <p className="text-sm text-zinc-400">
           Googleアカウントでログインしてください

@@ -360,7 +360,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const playNext = useCallback(() => {
     const queue = songsRef.current;
 
-    if (!currentSong || queue.length === 0) {
+    if (!currentSong || !queue.length) {
       return;
     }
 
@@ -374,7 +374,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const playPrevious = useCallback(() => {
     const queue = songsRef.current;
 
-    if (!currentSong || queue.length === 0) {
+    if (!currentSong || !queue.length) {
       return;
     }
 

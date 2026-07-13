@@ -35,7 +35,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
     router.refresh();
   };
 
-  if (songs.length === 0) {
+  if (!songs.length) {
     return <p className="text-sm text-zinc-400">曲がありません。</p>;
   }
 
@@ -86,7 +86,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
               >
                 <MoreVertical className="h-5 w-5" />
               </IconButton>
-              {openMenuSongId === song.id ? (
+              {openMenuSongId === song.id && (
                 <div className="bg-surface-elevated absolute right-0 z-10 mt-1 rounded-md border border-white/10 shadow-lg shadow-black/40">
                   <button
                     type="button"
@@ -98,7 +98,7 @@ export function SongList({ playlistId, playlistTitle, songs }: Props) {
                     プレイリストから削除
                   </button>
                 </div>
-              ) : null}
+              )}
             </div>
           </li>
         );

@@ -22,7 +22,9 @@ export default async function MainLayout({
   return (
     <PlayerProvider userEmail={user.email}>
       <AppHeader quota={quota} user={user} />
-      <PlayerLayout>{children}</PlayerLayout>
+      <main className="mx-auto w-full max-w-300 px-4 pt-6 pb-20">
+        <PlayerLayout>{children}</PlayerLayout>
+      </main>
       <PlayerMiniPlayer />
     </PlayerProvider>
   );

@@ -117,6 +117,28 @@ items.map((item) => {
 items.map(({ name }) => name);
 ```
 
+- TSX 内で条件分岐による描画を行う場合、条件が偽のときに何も描画しない（`null`）のであれば `&&` を使用すること。偽の場合にも別の要素を描画する場合のみ三項演算子を使用すること
+
+```tsx
+// NG
+{condition ? <div /> : null}
+
+// OK
+{condition && <div />}
+```
+
+- 配列に要素があるかどうかを判定する場合は `!!{配列}.length`（要素がある）・`!{配列}.length`（要素がない）を使用し、`.length > 0` や `.length === 0` は使用しないこと
+
+```ts
+// NG
+items.length > 0;
+items.length === 0;
+
+// OK
+!!items.length;
+!items.length;
+```
+
 ### コンポーネント
 
 - コンポーネントファイルは以下の順で記述すること

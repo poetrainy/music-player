@@ -4,6 +4,8 @@ import { QuotaUsage } from "@/features/user/entity";
 
 export const cn = (...inputs: ClassValue[]): string => clsx(inputs);
 
+export const SERVICE_NAME = "YouTube Music Player";
+
 const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
 
 export const trimChannelTopicSuffix = (channelTitle: string): string =>

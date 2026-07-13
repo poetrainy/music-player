@@ -45,13 +45,13 @@ export const getAdjacentSong = (
   direction: 1 | -1,
   isShuffled: boolean,
 ): Song | null => {
-  if (songs.length === 0) {
+  if (!songs.length) {
     return null;
   }
 
   if (isShuffled) {
     const candidates = songs.filter((song) => song.id !== currentSongId);
-    const pool = candidates.length > 0 ? candidates : songs;
+    const pool = !!candidates.length ? candidates : songs;
 
     return pool[Math.floor(Math.random() * pool.length)];
   }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Music, Search } from "lucide-react";
 import { QuotaRing } from "@/components/QuotaRing";
 import { QuotaUsage, User } from "@/features/user/entity";
+import { SERVICE_NAME } from "@/library";
 
 interface Props {
   quota: QuotaUsage;
@@ -11,7 +12,7 @@ interface Props {
 
 export function AppHeader({ quota, user }: Props) {
   return (
-    <div className="sticky top-0 z-40 w-full">
+    <header className="sticky top-0 z-40 w-full">
       <div className="mx-auto flex max-w-300 items-center justify-between gap-3 p-4">
         <h1 className="shrink-0 text-lg font-bold">
           <Link
@@ -19,11 +20,11 @@ export function AppHeader({ quota, user }: Props) {
             className="text-foreground hidden items-center gap-2 active:text-zinc-400 md:flex"
           >
             <Music className="h-6 w-6" />
-            <span>YouTube Music Player</span>
+            <span>{SERVICE_NAME}</span>
           </Link>
           <Link
             href="/"
-            aria-label="YouTube Music Player"
+            aria-label={SERVICE_NAME}
             className="text-foreground flex items-center active:text-zinc-400 md:hidden"
           >
             <Music className="h-6 w-6" />
@@ -56,6 +57,6 @@ export function AppHeader({ quota, user }: Props) {
           </Link>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

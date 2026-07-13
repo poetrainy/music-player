@@ -21,7 +21,7 @@ export function AccountComponent({ quota, user }: Props) {
   }).format(new Date(quota.resetAt));
 
   return (
-    <div className="flex min-h-[calc(100dvh-11rem)] flex-col gap-8 p-6">
+    <div className="flex min-h-[calc(100dvh-11rem)] flex-col gap-8">
       <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
         <div className="relative h-28 w-28 overflow-hidden rounded-full shadow-lg shadow-black/40">
           <Image

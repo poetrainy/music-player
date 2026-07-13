@@ -7,12 +7,14 @@ interface Props {
   params: Promise<{ playlistId: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Props): Promise<Metadata> => {
   const { playlistId } = await params;
   const playlist = await getPlaylistById(playlistId);
 
   return { title: playlist?.title };
-}
+};
 
 export default async function Page({ params }: Props) {
   const { playlistId } = await params;

@@ -39,7 +39,8 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
             <YoutubeThumbnail
               videoId={song.id}
               alt={song.title}
-              size="large"
+              size={size === "sm" ? "small" : "large"}
+              sizes={size === "sm" ? "8rem" : "24rem"}
             />
           </div>
         ) : (

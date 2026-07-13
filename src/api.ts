@@ -28,7 +28,7 @@ const toSong = (item: YoutubeVideoListResponse["items"][number]): Song => ({
 });
 
 export const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
-  if (songIds.length === 0) {
+  if (!songIds.length) {
     return [];
   }
 

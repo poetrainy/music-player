@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SERVICE_NAME } from "@/library";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,7 +13,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SERVICE_NAME = "YouTube Music Player";
 const SERVICE_DESCRIPTION = "プレイリストから音楽を聴くことができます。";
 
 export const metadata: Metadata = {

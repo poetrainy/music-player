@@ -7,7 +7,7 @@ interface Props {
 
 export function PlaylistListComponent({ playlists }: Props) {
   return (
-    <div className="flex flex-col gap-6 p-4 pt-6">
+    <div className="flex flex-col gap-6">
       <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
         プレイリスト
       </h1>

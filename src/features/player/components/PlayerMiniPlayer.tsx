@@ -50,6 +50,7 @@ export function PlayerMiniPlayer() {
         >
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
             <YoutubeThumbnail
+              key={currentSong.id}
               videoId={currentSong.id}
               alt={currentSong.title}
               size="small"
@@ -66,7 +67,7 @@ export function PlayerMiniPlayer() {
         </Link>
         {isPanelShowing ? null : (
           <>
-            {hasAdjacentSong ? (
+            {hasAdjacentSong && (
               <IconButton
                 type="button"
                 onClick={playPrevious}
@@ -75,7 +76,7 @@ export function PlayerMiniPlayer() {
               >
                 <SkipBack className="h-5 w-5" fill="currentColor" />
               </IconButton>
-            ) : null}
+            )}
             <button
               type="button"
               onClick={togglePlayback}
@@ -88,7 +89,7 @@ export function PlayerMiniPlayer() {
                 <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
               )}
             </button>
-            {hasAdjacentSong ? (
+            {hasAdjacentSong && (
               <IconButton
                 type="button"
                 onClick={playNext}
@@ -97,7 +98,7 @@ export function PlayerMiniPlayer() {
               >
                 <SkipForward className="h-5 w-5" fill="currentColor" />
               </IconButton>
-            ) : null}
+            )}
           </>
         )}
       </div>

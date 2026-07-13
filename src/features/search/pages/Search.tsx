@@ -85,7 +85,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 pt-6">
+    <div className="flex flex-col gap-6">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
@@ -108,7 +108,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
           )}
         </button>
       </form>
-      {playlists.length > 0 ? (
+      {!!playlists.length && (
         <select
           value={selectedPlaylistId}
           onChange={(event) => setSelectedPlaylistId(event.target.value)}
@@ -121,8 +121,8 @@ export function SearchComponent({ playlists, query, songs }: Props) {
             </option>
           ))}
         </select>
-      ) : null}
-      {songs.length === 0 ? (
+      )}
+      {!songs.length ? (
         <p className="text-sm text-zinc-400">
           {query ? "検索結果がありません。" : "曲を検索してください。"}
         </p>
@@ -144,7 +144,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                 </p>
                 <p className="truncate text-xs text-zinc-400">{artist}</p>
               </div>
-              {selectedPlaylistId ? (
+              {selectedPlaylistId && (
                 <button
                   type="button"
                   onClick={() =>
@@ -168,7 +168,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                     "追加"
                   )}
                 </button>
-              ) : null}
+              )}
             </li>
           ))}
         </ul>

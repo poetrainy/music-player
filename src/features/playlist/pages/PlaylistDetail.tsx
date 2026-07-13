@@ -10,8 +10,8 @@ interface Props {
 
 export function PlaylistDetailComponent({ playlist }: Props) {
   return (
-    <div className="flex flex-col gap-6 pb-6">
-      <div className="flex flex-col items-center gap-4 pt-6 text-center">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col items-center gap-4 text-center">
         <div className="w-48">
           <PlaylistThumbnailCollage songs={playlist.songs} size="lg" />
         </div>
