@@ -378,6 +378,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setCurrentSong((previous) =>
         previous?.id === song.id ? previous : song,
       );
+      setActiveMobileView("player");
 
       if (nextPlaylistId) {
         window.history.replaceState(
