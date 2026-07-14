@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { PlayerVolumeControl } from "@/features/player/components/PlayerVolumeControl";
 import { usePlayer } from "@/features/player/hook";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+import { cn } from "@/library";
 
 export function PlayerMiniPlayer() {
   const {
@@ -68,20 +70,13 @@ export function PlayerMiniPlayer() {
             size="small"
           />
         </div>
-        {playlistId ? (
-          <Link
-            href={`/playlists/${playlistId}/${currentSong.id}`}
-            onClick={() => setActiveMobileView("player")}
-            scroll={false}
-            className="hidden max-w-169 min-w-0 items-center gap-3 text-left active:opacity-70 md:flex"
-          >
-            {songInfo}
-          </Link>
-        ) : (
-          <div className="hidden max-w-40 min-w-0 items-center gap-3 text-left md:flex">
-            {songInfo}
-          </div>
-        )}
+        <PlayerMiniPlayerSongInfoLink
+          playlistId={playlistId}
+          songId={currentSong.id}
+          onClick={() => setActiveMobileView("player")}
+        >
+          {songInfo}
+        </PlayerMiniPlayerSongInfoLink>
         <button
           type="button"
           onClick={() => setActiveMobileView("player")}
@@ -128,5 +123,44 @@ export function PlayerMiniPlayer() {
         )}
       </div>
     </div>
+  );
+}
+
+const PLAYER_MINI_PLAYER_SONG_INFO_LINK_CLASS_NAME =
+  "hidden max-w-169 min-w-0 items-center gap-3 text-left md:flex";
+
+interface PlayerMiniPlayerSongInfoLinkProps {
+  playlistId: string | null;
+  songId: string;
+  onClick: () => void;
+  children: ReactNode;
+}
+
+function PlayerMiniPlayerSongInfoLink({
+  playlistId,
+  songId,
+  onClick,
+  children,
+}: PlayerMiniPlayerSongInfoLinkProps) {
+  if (!playlistId) {
+    return (
+      <div className={PLAYER_MINI_PLAYER_SONG_INFO_LINK_CLASS_NAME}>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={`/playlists/${playlistId}/${songId}`}
+      onClick={onClick}
+      scroll={false}
+      className={cn(
+        PLAYER_MINI_PLAYER_SONG_INFO_LINK_CLASS_NAME,
+        "active:opacity-70",
+      )}
+    >
+      {children}
+    </Link>
   );
 }
