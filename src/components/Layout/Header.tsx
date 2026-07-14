@@ -17,7 +17,7 @@ export function Header({ quota, user }: Props) {
         <h1 className="shrink-0 text-lg font-bold">
           <Link
             href="/"
-            className="text-foreground hidden items-center gap-2 active:text-zinc-400 md:flex"
+            className="text-foreground hidden items-center gap-2 transition-colors hover:text-zinc-300 active:text-zinc-400 md:flex"
           >
             <Music className="size-6" />
             <span>{SERVICE_NAME}</span>
@@ -25,7 +25,7 @@ export function Header({ quota, user }: Props) {
           <Link
             href="/"
             aria-label={SERVICE_NAME}
-            className="text-foreground flex items-center active:text-zinc-400 md:hidden"
+            className="text-foreground flex items-center transition-colors hover:text-zinc-300 active:text-zinc-400 md:hidden"
           >
             <Music className="size-6" />
           </Link>
