@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
+import { cva } from "class-variance-authority";
 import { Check, Loader2 } from "lucide-react";
 import { usePlayer } from "@/features/player/hook";
 import {
@@ -17,6 +18,18 @@ interface Props {
   query: string;
   songs: Song[];
 }
+
+const cvaSearchComponentSongListItem = cva(
+  "flex items-center gap-3 rounded-md p-2",
+  {
+    variants: {
+      isActive: {
+        true: "bg-surface-elevated",
+        false: "hover:bg-surface-elevated active:bg-surface-elevated",
+      },
+    },
+  },
+);
 
 export function SearchComponent({ playlists, query, songs }: Props) {
   const { currentSong, play } = usePlayer();
@@ -147,18 +160,19 @@ export function SearchComponent({ playlists, query, songs }: Props) {
         <ul className="flex flex-col">
           {songs.map((song) => {
             const playlistItemId = getPlaylistItemId(song.id);
+            const isActive = currentSong?.id === song.id;
 
             return (
-              <li key={song.id} className="flex items-center gap-3 p-2">
+              <li
+                key={song.id}
+                className={cvaSearchComponentSongListItem({ isActive })}
+              >
                 <button
                   type="button"
                   onClick={() => play(song, null, "検索結果", [])}
-                  className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left"
+                  className="group flex min-w-0 flex-1 items-center gap-3 rounded-md text-left"
                 >
-                  <SongSummary
-                    song={song}
-                    isActive={currentSong?.id === song.id}
-                  />
+                  <SongSummary song={song} isActive={isActive} />
                 </button>
                 {selectedPlaylistId && (
                   <button

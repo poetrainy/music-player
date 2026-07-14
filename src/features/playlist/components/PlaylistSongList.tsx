@@ -62,7 +62,7 @@ export function PlaylistSongList({ playlistId, playlistTitle, songs }: Props) {
             <button
               type="button"
               onClick={() => play(song, playlistId, playlistTitle, songs)}
-              className="flex min-w-0 flex-1 items-center gap-3 rounded-md py-2 text-left"
+              className="group flex min-w-0 flex-1 items-center gap-3 rounded-md py-2 text-left"
             >
               <span className="w-4 shrink-0 text-right text-sm text-zinc-500">
                 {index + 1}
