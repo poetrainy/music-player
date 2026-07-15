@@ -17,10 +17,53 @@ const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
 const trimChannelTopicSuffix = (channelTitle: string): string =>
   channelTitle.replace(CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN, "");
 
+// NOTE: 優先度順。maxresdefault は未存在の動画も多いため、実際に取得できる画質を上から順にサーバー側で確認する
+const LARGE_THUMBNAIL_QUALITIES = [
+  "maxresdefault",
+  "sddefault",
+  "hqdefault",
+] as const;
+
 const buildThumbnailUrl = (videoId: string, quality: string): string =>
   `https://i.ytimg.com/vi/${videoId}/${quality}.jpg`;
 
-const toSong = (item: gapi.client.youtube.Video): Song[] => {
+const ISO8601_DURATION_PATTERN = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
+
+const parseDurationSeconds = (duration: string | undefined): number => {
+  const match = duration ? ISO8601_DURATION_PATTERN.exec(duration) : null;
+
+  if (!match) {
+    return 0;
+  }
+
+  const [, hours, minutes, seconds] = match;
+
+  return Number(hours ?? 0) * 3600 + Number(minutes ?? 0) * 60 + Number(seconds ?? 0);
+};
+
+const isThumbnailAvailable = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(url, { method: "HEAD" });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+const resolveLargeThumbnailUrl = async (videoId: string): Promise<string> => {
+  for (const quality of LARGE_THUMBNAIL_QUALITIES) {
+    const url = buildThumbnailUrl(videoId, quality);
+
+    if (await isThumbnailAvailable(url)) {
+      return url;
+    }
+  }
+
+  return buildThumbnailUrl(videoId, "default");
+};
+
+const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
   if (!item.id || !item.snippet?.title) {
     return [];
   }
@@ -28,10 +71,11 @@ const toSong = (item: gapi.client.youtube.Video): Song[] => {
   return [
     {
       id: item.id,
-      title: item.snippet.title,
+      title: item.snippet.localized?.title ?? item.snippet.title,
       artist: trimChannelTopicSuffix(item.snippet.channelTitle ?? ""),
+      durationSeconds: parseDurationSeconds(item.contentDetails?.duration),
       thumbnailUrlSmall: buildThumbnailUrl(item.id, "mqdefault"),
-      thumbnailUrlLarge: buildThumbnailUrl(item.id, "hqdefault"),
+      thumbnailUrlLarge: await resolveLargeThumbnailUrl(item.id),
     },
   ];
 };
@@ -43,12 +87,15 @@ const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
 
   const data = await fetchApi<gapi.client.youtube.VideoListResponse>(
     "/videos",
-    { part: "snippet", id: songIds.join(",") },
+    { part: "snippet,contentDetails", id: songIds.join(","), hl: "ja" },
   );
 
-  return (data.items ?? []).flatMap(toSong);
+  const songs = await Promise.all((data.items ?? []).map(toSong));
+
+  return songs.flat();
 };
 
+// NOTE: search.list は contentDetails（再生時間）を返さないため、videos.list（getSongsByIds）を再利用して取得する。検索結果の順序は videoIds の並びで復元する
 const searchSongs = async (query: string): Promise<Song[]> => {
   if (!query.trim()) {
     return [];
@@ -62,26 +109,20 @@ const searchSongs = async (query: string): Promise<Song[]> => {
       type: "video",
       videoCategoryId: "10",
       maxResults: "25",
+      hl: "ja",
     },
   );
 
-  return (data.items ?? []).flatMap((item) => {
-    const videoId = item.id?.videoId;
-    const title = item.snippet?.title;
+  const videoIds = (data.items ?? []).flatMap((item) =>
+    item.id?.videoId ? [item.id.videoId] : [],
+  );
+  const songs = await getSongsByIds(videoIds);
+  const songsById = new Map(songs.map((song) => [song.id, song]));
 
-    if (!videoId || !title) {
-      return [];
-    }
+  return videoIds.flatMap((videoId) => {
+    const song = songsById.get(videoId);
 
-    return [
-      {
-        id: videoId,
-        title,
-        artist: trimChannelTopicSuffix(item.snippet?.channelTitle ?? ""),
-        thumbnailUrlSmall: buildThumbnailUrl(videoId, "mqdefault"),
-        thumbnailUrlLarge: buildThumbnailUrl(videoId, "hqdefault"),
-      },
-    ];
+    return song ? [song] : [];
   });
 };
 
