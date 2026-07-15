@@ -71,7 +71,7 @@ const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
   return [
     {
       id: item.id,
-      title: item.snippet.title,
+      title: item.snippet.localized?.title ?? item.snippet.title,
       artist: trimChannelTopicSuffix(item.snippet.channelTitle ?? ""),
       durationSeconds: parseDurationSeconds(item.contentDetails?.duration),
       thumbnailUrlSmall: buildThumbnailUrl(item.id, "mqdefault"),
