@@ -37,11 +37,11 @@ export function SongSummary({ song, isActive }: Props) {
           </div>
         )}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className={cvaSongSummaryTitle({ isActive })}>{song.title}</p>
         <p className="truncate text-xs text-zinc-400">{song.artist}</p>
       </div>
-      <span className="shrink-0 text-xs text-zinc-400">
+      <span className="shrink-0 text-xs text-zinc-500">
         {formatDuration(song.durationSeconds)}
       </span>
     </>
