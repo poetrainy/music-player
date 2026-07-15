@@ -59,7 +59,7 @@ export function PlayerMiniPlayer() {
         value={currentTime}
         onChange={(event) => seekTo(Number(event.target.value))}
         aria-label="再生位置"
-        className="accent-brand m-0 block h-0.5 w-full cursor-pointer"
+        className="accent-brand m-0 block h-0.5 w-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:opacity-0 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:opacity-0"
       />
       <div className="mx-auto flex max-w-300 items-center gap-4 px-4 py-2">
         <div className="relative size-10 shrink-0 overflow-hidden rounded">

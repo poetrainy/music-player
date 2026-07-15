@@ -297,6 +297,9 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
         if (state === "playing") {
           setIsPlaying(true);
+
+          // NOTE: 曲切り替え中の遷移が完了したため、以降に届く paused は本物の一時停止として扱う
+          autoplayIntentRef.current = false;
           return;
         }
 
