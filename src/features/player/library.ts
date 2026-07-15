@@ -35,6 +35,44 @@ export const savePlaybackState = (state: StoredPlaybackState): void => {
   localStorage.setItem(PLAYBACK_STATE_STORAGE_KEY, JSON.stringify(state));
 };
 
+const isStoredSong = (value: unknown): value is Song => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const song = value as Record<string, unknown>;
+
+  return (
+    typeof song.id === "string" &&
+    typeof song.title === "string" &&
+    typeof song.artist === "string" &&
+    typeof song.durationSeconds === "number" &&
+    typeof song.thumbnailUrlSmall === "string" &&
+    typeof song.thumbnailUrlLarge === "string"
+  );
+};
+
+// NOTE: Song・StoredPlaybackState のスキーマ変更後も、localStorage に残った旧スキーマのデータをそのまま信用しないよう形を検証する
+const isStoredPlaybackState = (
+  value: unknown,
+): value is StoredPlaybackState => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const state = value as Record<string, unknown>;
+
+  return (
+    typeof state.currentTime === "number" &&
+    typeof state.playlistId === "string" &&
+    typeof state.playlistTitle === "string" &&
+    isStoredSong(state.song) &&
+    Array.isArray(state.songs) &&
+    state.songs.every(isStoredSong) &&
+    typeof state.userEmail === "string"
+  );
+};
+
 export const loadPlaybackState = (): StoredPlaybackState | null => {
   const raw = localStorage.getItem(PLAYBACK_STATE_STORAGE_KEY);
 
@@ -44,19 +82,7 @@ export const loadPlaybackState = (): StoredPlaybackState | null => {
 
   const parsed: unknown = JSON.parse(raw);
 
-  return parsed as StoredPlaybackState;
-};
-
-export const formatPlaybackTime = (seconds: number): string => {
-  if (!Number.isFinite(seconds) || seconds < 0) {
-    return "0:00";
-  }
-
-  const totalSeconds = Math.floor(seconds);
-  const minutes = Math.floor(totalSeconds / 60);
-  const remainingSeconds = totalSeconds % 60;
-
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  return isStoredPlaybackState(parsed) ? parsed : null;
 };
 
 export const getAdjacentSong = (

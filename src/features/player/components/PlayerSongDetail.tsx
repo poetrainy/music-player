@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { IconButton } from "@/components/IconButton";
 import { usePlayer } from "@/features/player/hook";
-import { formatPlaybackTime } from "@/features/player/library";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
+import { formatDuration } from "@/library";
 
 const cvaPlayerSongDetailToggleIcon = cva("", {
   variants: {
@@ -98,8 +98,8 @@ export function PlayerSongDetail() {
             className="accent-brand w-full"
           />
           <div className="flex justify-between text-xs text-zinc-400">
-            <span>{formatPlaybackTime(currentTime)}</span>
-            <span>{formatPlaybackTime(duration)}</span>
+            <span>{formatDuration(currentTime)}</span>
+            <span>{formatDuration(duration)}</span>
           </div>
         </div>
         <div className="flex items-center gap-5">

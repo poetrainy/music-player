@@ -106,6 +106,16 @@ export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
 - enum 的に `as const` 配列で値の一覧を定義する場合、他ファイルから使わず export しない internal な型であっても、対応する型を必ず用意すること
   - 但し、`entity.ts` に書くほどでもない軽量な値（コンポーネント内部でのみ使う表示分類など）は、`as const` 配列を用意せず `type` のみで定義してよい
+- Props でサイズを管理する enum（`as const` 配列）は `sm`・`md`・`lg` のような省略形ではなく、`small`・`medium`・`large` など省略しない単語を用いること
+  - `xs`（extra small）・`xl`（extra large）は基本的に使用しないこと。`small`・`medium`・`large` の3段階で表現できないか先に検討し、どうしても不足する場合のみユーザーに確認を取ること
+
+```ts
+// NG
+export const SIZES = ["sm", "md", "lg"] as const;
+
+// OK
+export const SIZES = ["small", "medium", "large"] as const;
+```
 - `any` は使用しないこと
 - 非 null アサーション演算子 (`!`) は使用しないこと
 - 型アサーション (`as`) は原則禁止とし、型で解決できない場合のみ使用すること

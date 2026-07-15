@@ -2,9 +2,13 @@ import { cva } from "class-variance-authority";
 import { Play } from "lucide-react";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { Song } from "@/features/song/entity";
+import { formatDuration } from "@/library";
 
 interface Props {
-  song: Pick<Song, "id" | "title" | "artist" | "thumbnailUrlSmall">;
+  song: Pick<
+    Song,
+    "id" | "title" | "artist" | "durationSeconds" | "thumbnailUrlSmall"
+  >;
   isActive: boolean;
 }
 
@@ -35,6 +39,9 @@ export function SongSummary({ song, isActive }: Props) {
         <p className={cvaSongSummaryTitle({ isActive })}>{song.title}</p>
         <p className="truncate text-xs text-zinc-400">{song.artist}</p>
       </div>
+      <span className="shrink-0 text-xs text-zinc-400">
+        {formatDuration(song.durationSeconds)}
+      </span>
     </>
   );
 }

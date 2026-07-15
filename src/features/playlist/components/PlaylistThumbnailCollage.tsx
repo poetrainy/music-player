@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
 import { Song } from "@/features/song/entity";
 
-export const PLAYLIST_THUMBNAIL_COLLAGE_SIZES = ["sm", "lg"] as const;
+export const PLAYLIST_THUMBNAIL_COLLAGE_SIZES = ["small", "large"] as const;
 export type PlaylistThumbnailCollageSize =
   (typeof PLAYLIST_THUMBNAIL_COLLAGE_SIZES)[number];
 
@@ -18,8 +18,8 @@ const cvaPlaylistThumbnailCollage = cva(
   {
     variants: {
       size: {
-        sm: "size-12 md:size-16 rounded",
-        lg: "aspect-square w-full rounded-lg shadow-lg shadow-black/40",
+        small: "size-12 md:size-16 rounded",
+        large: "aspect-square w-full rounded-lg shadow-lg shadow-black/40",
       },
     },
   },
@@ -38,11 +38,11 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
           <div key={song.id} className="relative">
             <SongThumbnail
               thumbnailUrl={
-                size === "sm" ? song.thumbnailUrlSmall : song.thumbnailUrlLarge
+                size === "small" ? song.thumbnailUrlSmall : song.thumbnailUrlLarge
               }
               alt={song.title}
-              size={size === "sm" ? "small" : "large"}
-              sizes={size === "sm" ? "8rem" : "24rem"}
+              size={size}
+              sizes={size === "small" ? "8rem" : "28rem"}
             />
           </div>
         ) : (
