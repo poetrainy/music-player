@@ -63,17 +63,9 @@ export const getAdjacentSong = (
   songs: Song[],
   currentSongId: string,
   direction: 1 | -1,
-  isShuffled: boolean,
 ): Song | null => {
   if (!songs.length) {
     return null;
-  }
-
-  if (isShuffled) {
-    const candidates = songs.filter((song) => song.id !== currentSongId);
-    const pool = !!candidates.length ? candidates : songs;
-
-    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   const currentIndex = songs.findIndex((song) => song.id === currentSongId);
@@ -85,4 +77,19 @@ export const getAdjacentSong = (
   const targetIndex = (currentIndex + direction + songs.length) % songs.length;
 
   return songs[targetIndex];
+};
+
+export const createShuffleOrder = (
+  songs: Song[],
+  currentSongId: string,
+): Song[] => {
+  const rest = songs.filter((song) => song.id !== currentSongId);
+  const current = songs.find((song) => song.id === currentSongId);
+
+  for (let index = rest.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [rest[index], rest[swapIndex]] = [rest[swapIndex], rest[index]];
+  }
+
+  return current ? [current, ...rest] : rest;
 };

@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import {
+  createShuffleOrder,
   DEFAULT_VOLUME,
   getAdjacentSong,
   loadPlaybackState,
@@ -23,6 +24,8 @@ import { SERVICE_NAME } from "@/library";
 interface YoutubePlayer {
   playVideo: () => void;
   pauseVideo: () => void;
+  loadVideoById: (videoId: string) => void;
+  cueVideoById: (videoId: string, startSeconds?: number) => void;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   setVolume: (volume: number) => void;
   getCurrentTime: () => number;
@@ -52,6 +55,7 @@ interface YoutubeIframeApi {
     options: YoutubePlayerConstructorOptions,
   ) => YoutubePlayer;
   PlayerState: {
+    CUED: number;
     ENDED: number;
     PLAYING: number;
   };
@@ -167,6 +171,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const pendingPlayIntentRef = useRef(false);
   const isPlayerReadyRef = useRef(false);
   const currentSongRef = useRef<Song | null>(null);
+  const shuffleOrderRef = useRef<Song[]>([]);
   const pathname = usePathname();
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [playlistId, setPlaylistId] = useState<string | null>(null);
@@ -213,6 +218,15 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     isShuffledRef.current = isShuffled;
   }, [isShuffled]);
 
+  const resetShuffleOrder = useCallback(
+    (song: Song | null, songsList: Song[]) => {
+      shuffleOrderRef.current = song
+        ? createShuffleOrder(songsList, song.id)
+        : [];
+    },
+    [],
+  );
+
   const goToSong = useCallback(
     (song: Song) => {
       setCurrentSong(song);
@@ -233,7 +247,35 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   });
 
   useEffect(() => {
+    return () => {
+      isPlayerReadyRef.current = false;
+      playerRef.current?.destroy();
+      playerRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!currentSong) {
+      return;
+    }
+
+    if (playerRef.current) {
+      if (!isPlayerReadyRef.current) {
+        return;
+      }
+
+      const restoreTime = pendingRestoreTimeRef.current;
+
+      setCurrentTime(restoreTime ?? 0);
+      setDuration(0);
+
+      if (restoreTime !== null) {
+        playerRef.current.cueVideoById(currentSong.id, restoreTime);
+        pendingRestoreTimeRef.current = null;
+      } else {
+        playerRef.current.loadVideoById(currentSong.id);
+      }
+
       return;
     }
 
@@ -270,6 +312,22 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
             player?.setVolume(volumeRef.current);
 
+            // 起動時の YouTube API 読み込み待ちの間に曲が切り替わっていた場合、生成直後のプレイヤーを最新の曲に合わせる
+            const latestSong = currentSongRef.current;
+
+            if (latestSong && latestSong.id !== currentSong.id) {
+              const latestRestoreTime = pendingRestoreTimeRef.current;
+
+              if (latestRestoreTime !== null) {
+                player?.cueVideoById(latestSong.id, latestRestoreTime);
+                pendingRestoreTimeRef.current = null;
+              } else {
+                player?.loadVideoById(latestSong.id);
+              }
+
+              return;
+            }
+
             if (restoreTime !== null) {
               player?.seekTo(restoreTime, true);
               setCurrentTime(restoreTime);
@@ -293,8 +351,20 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
             setIsPlaying(false);
           },
           onStateChange: (event) => {
+            if (event.data === YT.PlayerState.CUED) {
+              setDuration(playerRef.current?.getDuration() ?? 0);
+              setIsPlaying(false);
+              return;
+            }
+
             if (event.data !== YT.PlayerState.ENDED) {
               setIsPlaying(event.data === YT.PlayerState.PLAYING);
+              return;
+            }
+
+            const endedSong = currentSongRef.current;
+
+            if (!endedSong) {
               return;
             }
 
@@ -306,7 +376,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
             const queue = songsRef.current;
             const currentIndex = queue.findIndex(
-              (song) => song.id === currentSong.id,
+              (song) => song.id === endedSong.id,
             );
             const isLastSong = currentIndex === queue.length - 1;
 
@@ -319,12 +389,23 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
               return;
             }
 
-            const nextSong = getAdjacentSong(
-              queue,
-              currentSong.id,
-              1,
-              isShuffledRef.current,
-            );
+            if (isShuffledRef.current) {
+              const nextShuffledSong = getAdjacentSong(
+                shuffleOrderRef.current,
+                endedSong.id,
+                1,
+              );
+
+              if (nextShuffledSong) {
+                goToSongOnEndRef.current(nextShuffledSong);
+              } else {
+                setIsPlaying(false);
+              }
+
+              return;
+            }
+
+            const nextSong = getAdjacentSong(queue, endedSong.id, 1);
 
             if (nextSong) {
               goToSongOnEndRef.current(nextSong);
@@ -338,9 +419,6 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
     return () => {
       isCancelled = true;
-      isPlayerReadyRef.current = false;
-      playerRef.current?.destroy();
-      playerRef.current = null;
     };
   }, [currentSong]);
 
@@ -378,6 +456,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setCurrentSong((previous) =>
         previous?.id === song.id ? previous : song,
       );
+      resetShuffleOrder(song, nextSongs);
       setActiveMobileView("player");
 
       if (nextPlaylistId) {
@@ -388,7 +467,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
         );
       }
     },
-    [],
+    [resetShuffleOrder],
   );
 
   const playNext = useCallback(() => {
@@ -398,7 +477,9 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       return;
     }
 
-    const nextSong = getAdjacentSong(queue, currentSong.id, 1, isShuffled);
+    const nextSong = isShuffled
+      ? getAdjacentSong(shuffleOrderRef.current, currentSong.id, 1)
+      : getAdjacentSong(queue, currentSong.id, 1);
 
     if (nextSong) {
       goToSong(nextSong);
@@ -412,7 +493,9 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       return;
     }
 
-    const previousSong = getAdjacentSong(queue, currentSong.id, -1, isShuffled);
+    const previousSong = isShuffled
+      ? getAdjacentSong(shuffleOrderRef.current, currentSong.id, -1)
+      : getAdjacentSong(queue, currentSong.id, -1);
 
     if (previousSong) {
       goToSong(previousSong);
@@ -447,8 +530,16 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   }, []);
 
   const toggleShuffle = useCallback(() => {
-    setIsShuffled((previous) => !previous);
-  }, []);
+    setIsShuffled((previous) => {
+      const next = !previous;
+
+      if (next) {
+        resetShuffleOrder(currentSongRef.current, songsRef.current);
+      }
+
+      return next;
+    });
+  }, [resetShuffleOrder]);
 
   const seekTo = useCallback((seconds: number) => {
     if (!playerRef.current || !isPlayerReadyRef.current) {
@@ -480,12 +571,13 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setPlaylistTitle(nextPlaylistTitle);
       setSongs(nextSongs);
       setCurrentSong(song);
+      resetShuffleOrder(song, nextSongs);
 
       if (openPlayer) {
         setActiveMobileView("player");
       }
     },
-    [],
+    [resetShuffleOrder],
   );
 
   const restorePlayback = useCallback(() => {
