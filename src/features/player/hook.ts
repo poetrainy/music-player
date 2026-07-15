@@ -10,6 +10,10 @@ import {
   useState,
 } from "react";
 import {
+  createPlaybackController,
+  PlaybackController,
+} from "@/service/player";
+import {
   createShuffleOrder,
   DEFAULT_VOLUME,
   getAdjacentSong,
@@ -21,91 +25,11 @@ import {
 import { Song } from "@/features/song/entity";
 import { SERVICE_NAME } from "@/library";
 
-interface YoutubePlayer {
-  playVideo: () => void;
-  pauseVideo: () => void;
-  loadVideoById: (videoId: string) => void;
-  cueVideoById: (videoId: string, startSeconds?: number) => void;
-  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
-  setVolume: (volume: number) => void;
-  getCurrentTime: () => number;
-  getDuration: () => number;
-  destroy: () => void;
-}
-
-interface YoutubePlayerStateChangeEvent {
-  data: number;
-}
-
-interface YoutubePlayerConstructorOptions {
-  videoId: string;
-  playerVars: {
-    autoplay: 0 | 1;
-    controls: 0 | 1;
-  };
-  events: {
-    onReady: () => void;
-    onStateChange: (event: YoutubePlayerStateChangeEvent) => void;
-  };
-}
-
-interface YoutubeIframeApi {
-  Player: new (
-    element: HTMLElement,
-    options: YoutubePlayerConstructorOptions,
-  ) => YoutubePlayer;
-  PlayerState: {
-    CUED: number;
-    ENDED: number;
-    PAUSED: number;
-    PLAYING: number;
-  };
-}
-
-declare global {
-  interface Window {
-    YT?: YoutubeIframeApi;
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-export const PLAYER_CONTAINER_ID = "player-youtube-container";
+export const PLAYER_CONTAINER_ID = "player-embed-container";
 
 const SONG_DETAIL_PATHNAME_PATTERN = /^\/playlists\/[^/]+\/[^/]+$/;
 
-const YOUTUBE_IFRAME_API_SRC = "https://www.youtube.com/iframe_api";
 const PLAYBACK_TIME_POLLING_INTERVAL_MILLISECONDS = 500;
-
-let youtubeIframeApiPromise: Promise<YoutubeIframeApi> | null = null;
-
-const loadYoutubeIframeApi = (): Promise<YoutubeIframeApi> => {
-  if (youtubeIframeApiPromise) {
-    return youtubeIframeApiPromise;
-  }
-
-  youtubeIframeApiPromise = new Promise((resolve) => {
-    if (window.YT) {
-      resolve(window.YT);
-      return;
-    }
-
-    const previousCallback = window.onYouTubeIframeAPIReady;
-
-    window.onYouTubeIframeAPIReady = () => {
-      previousCallback?.();
-
-      if (window.YT) {
-        resolve(window.YT);
-      }
-    };
-
-    const script = document.createElement("script");
-    script.src = YOUTUBE_IFRAME_API_SRC;
-    document.body.appendChild(script);
-  });
-
-  return youtubeIframeApiPromise;
-};
 
 export const MOBILE_VIEWS = ["list", "player"] as const;
 export type MobileView = (typeof MOBILE_VIEWS)[number];
@@ -162,7 +86,7 @@ export const usePlayer = (): PlayerContextValue => {
 };
 
 export const usePlayerController = (userEmail: string): PlayerContextValue => {
-  const playerRef = useRef<YoutubePlayer | null>(null);
+  const playerRef = useRef<PlaybackController | null>(null);
   const songsRef = useRef<Song[]>([]);
   const repeatModeRef = useRef<RepeatMode>("off");
   const isShuffledRef = useRef(false);
@@ -260,6 +184,57 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     };
   }, []);
 
+  const handlePlaybackEnded = useCallback(() => {
+    const endedSong = currentSongRef.current;
+
+    if (!endedSong) {
+      return;
+    }
+
+    if (repeatModeRef.current === "one") {
+      playerRef.current?.seekTo(0, true);
+      playerRef.current?.play();
+      return;
+    }
+
+    const queue = songsRef.current;
+    const currentIndex = queue.findIndex((song) => song.id === endedSong.id);
+    const isLastSong = currentIndex === queue.length - 1;
+
+    if (
+      repeatModeRef.current !== "all" &&
+      !isShuffledRef.current &&
+      isLastSong
+    ) {
+      setIsPlaying(false);
+      return;
+    }
+
+    if (isShuffledRef.current) {
+      const nextShuffledSong = getAdjacentSong(
+        shuffleOrderRef.current,
+        endedSong.id,
+        1,
+      );
+
+      if (nextShuffledSong) {
+        goToSongOnEndRef.current(nextShuffledSong);
+      } else {
+        setIsPlaying(false);
+      }
+
+      return;
+    }
+
+    const nextSong = getAdjacentSong(queue, endedSong.id, 1);
+
+    if (nextSong) {
+      goToSongOnEndRef.current(nextSong);
+    } else {
+      setIsPlaying(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!currentSong) {
       return;
@@ -276,12 +251,12 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setDuration(0);
 
       if (restoreTime !== null) {
-        playerRef.current.cueVideoById(currentSong.id, restoreTime);
+        playerRef.current.cueTrack(currentSong.id, restoreTime);
         pendingRestoreTimeRef.current = null;
       } else if (isPlayingRef.current) {
-        playerRef.current.loadVideoById(currentSong.id);
+        playerRef.current.loadTrack(currentSong.id);
       } else {
-        playerRef.current.cueVideoById(currentSong.id);
+        playerRef.current.cueTrack(currentSong.id);
       }
 
       return;
@@ -289,155 +264,92 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
     let isCancelled = false;
 
-    loadYoutubeIframeApi().then((YT) => {
-      const container = document.getElementById(PLAYER_CONTAINER_ID);
+    setCurrentTime(0);
+    setDuration(0);
 
-      if (isCancelled || !container) {
-        return;
-      }
+    const restoreTime = pendingRestoreTimeRef.current;
 
-      setCurrentTime(0);
-      setDuration(0);
+    isPlayerReadyRef.current = false;
 
-      const target = document.createElement("div");
-      container.appendChild(target);
+    createPlaybackController({
+      containerId: PLAYER_CONTAINER_ID,
+      trackId: currentSong.id,
+      autoplay: restoreTime === null,
+      onStateChange: (state) => {
+        if (state === "cued") {
+          setDuration(playerRef.current?.getDuration() ?? 0);
+          setIsPlaying(false);
+          return;
+        }
 
-      const restoreTime = pendingRestoreTimeRef.current;
+        if (state === "playing") {
+          setIsPlaying(true);
+          return;
+        }
 
-      isPlayerReadyRef.current = false;
+        if (state === "paused") {
+          setIsPlaying(false);
+          return;
+        }
 
-      playerRef.current = new YT.Player(target, {
-        videoId: currentSong.id,
-        playerVars: {
-          autoplay: restoreTime === null ? 1 : 0,
-          controls: 0,
-        },
-        events: {
-          onReady: () => {
-            isPlayerReadyRef.current = true;
+        handlePlaybackEnded();
+      },
+    })
+      .then((controller) => {
+        if (isCancelled) {
+          controller.destroy();
+          return;
+        }
 
-            const player = playerRef.current;
+        playerRef.current = controller;
+        isPlayerReadyRef.current = true;
 
-            player?.setVolume(volumeRef.current);
+        controller.setVolume(volumeRef.current);
 
-            // 起動時の YouTube API 読み込み待ちの間に曲が切り替わっていた場合、生成直後のプレイヤーを最新の曲に合わせる
-            const latestSong = currentSongRef.current;
+        // 起動時の再生エンジン読み込み待ちの間に曲が切り替わっていた場合、生成直後のコントローラーを最新の曲に合わせる
+        const latestSong = currentSongRef.current;
 
-            if (latestSong && latestSong.id !== currentSong.id) {
-              const latestRestoreTime = pendingRestoreTimeRef.current;
+        if (latestSong && latestSong.id !== currentSong.id) {
+          const latestRestoreTime = pendingRestoreTimeRef.current;
 
-              if (latestRestoreTime !== null) {
-                player?.cueVideoById(latestSong.id, latestRestoreTime);
-                pendingRestoreTimeRef.current = null;
-              } else {
-                player?.loadVideoById(latestSong.id);
-              }
+          if (latestRestoreTime !== null) {
+            controller.cueTrack(latestSong.id, latestRestoreTime);
+            pendingRestoreTimeRef.current = null;
+          } else {
+            controller.loadTrack(latestSong.id);
+          }
 
-              return;
-            }
+          return;
+        }
 
-            if (restoreTime !== null) {
-              player?.seekTo(restoreTime, true);
-              setCurrentTime(restoreTime);
-              setDuration(player?.getDuration() ?? 0);
-              pendingRestoreTimeRef.current = null;
-            }
+        if (restoreTime !== null) {
+          controller.seekTo(restoreTime, true);
+          setCurrentTime(restoreTime);
+          setDuration(controller.getDuration());
+          pendingRestoreTimeRef.current = null;
+        }
 
-            if (pendingPlayIntentRef.current) {
-              pendingPlayIntentRef.current = false;
-              player?.playVideo();
-              setIsPlaying(true);
-              return;
-            }
+        if (pendingPlayIntentRef.current) {
+          pendingPlayIntentRef.current = false;
+          controller.play();
+          setIsPlaying(true);
+          return;
+        }
 
-            if (restoreTime === null) {
-              setIsPlaying(true);
-              return;
-            }
+        if (restoreTime === null) {
+          setIsPlaying(true);
+          return;
+        }
 
-            player?.pauseVideo();
-            setIsPlaying(false);
-          },
-          onStateChange: (event) => {
-            if (event.data === YT.PlayerState.CUED) {
-              setDuration(playerRef.current?.getDuration() ?? 0);
-              setIsPlaying(false);
-              return;
-            }
-
-            if (event.data === YT.PlayerState.PLAYING) {
-              setIsPlaying(true);
-              return;
-            }
-
-            if (event.data === YT.PlayerState.PAUSED) {
-              setIsPlaying(false);
-              return;
-            }
-
-            if (event.data !== YT.PlayerState.ENDED) {
-              return;
-            }
-
-            const endedSong = currentSongRef.current;
-
-            if (!endedSong) {
-              return;
-            }
-
-            if (repeatModeRef.current === "one") {
-              playerRef.current?.seekTo(0, true);
-              playerRef.current?.playVideo();
-              return;
-            }
-
-            const queue = songsRef.current;
-            const currentIndex = queue.findIndex(
-              (song) => song.id === endedSong.id,
-            );
-            const isLastSong = currentIndex === queue.length - 1;
-
-            if (
-              repeatModeRef.current !== "all" &&
-              !isShuffledRef.current &&
-              isLastSong
-            ) {
-              setIsPlaying(false);
-              return;
-            }
-
-            if (isShuffledRef.current) {
-              const nextShuffledSong = getAdjacentSong(
-                shuffleOrderRef.current,
-                endedSong.id,
-                1,
-              );
-
-              if (nextShuffledSong) {
-                goToSongOnEndRef.current(nextShuffledSong);
-              } else {
-                setIsPlaying(false);
-              }
-
-              return;
-            }
-
-            const nextSong = getAdjacentSong(queue, endedSong.id, 1);
-
-            if (nextSong) {
-              goToSongOnEndRef.current(nextSong);
-            } else {
-              setIsPlaying(false);
-            }
-          },
-        },
-      });
-    });
+        controller.pause();
+        setIsPlaying(false);
+      })
+      .catch(() => {});
 
     return () => {
       isCancelled = true;
     };
-  }, [currentSong]);
+  }, [currentSong, handlePlaybackEnded]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -447,7 +359,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     const intervalId = setInterval(() => {
       const player = playerRef.current;
 
-      if (!player || typeof player.getCurrentTime !== "function") {
+      if (!player) {
         return;
       }
 
@@ -526,9 +438,9 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     }
 
     if (isPlaying) {
-      playerRef.current.pauseVideo();
+      playerRef.current.pause();
     } else {
-      playerRef.current.playVideo();
+      playerRef.current.play();
     }
   }, [isPlaying]);
 

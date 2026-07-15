@@ -8,23 +8,6 @@ import { cn } from "@/library";
 export const SONG_THUMBNAIL_SIZES = ["small", "large"] as const;
 export type SongThumbnailSize = (typeof SONG_THUMBNAIL_SIZES)[number];
 
-const LARGE_THUMBNAIL_QUALITIES = [
-  "maxresdefault",
-  "sddefault",
-  "hqdefault",
-  "mqdefault",
-  "default",
-] as const;
-type LargeThumbnailQuality = (typeof LARGE_THUMBNAIL_QUALITIES)[number];
-
-const SMALL_THUMBNAIL_QUALITIES = [
-  "mqdefault",
-  "hqdefault",
-  "sddefault",
-  "maxresdefault",
-] as const;
-type SmallThumbnailQuality = (typeof SMALL_THUMBNAIL_QUALITIES)[number];
-
 export const SONG_THUMBNAIL_IMAGE_SIZES = ["8rem", "24rem"] as const;
 export type SongThumbnailImageSize =
   (typeof SONG_THUMBNAIL_IMAGE_SIZES)[number];
@@ -33,13 +16,13 @@ interface Props extends Omit<
   ImageProps,
   "sizes" | "src" | "onError" | "onLoad"
 > {
-  songId: string;
+  thumbnailUrl: string;
   size: SongThumbnailSize;
   sizes?: SongThumbnailImageSize;
 }
 
 export function SongThumbnail({
-  songId,
+  thumbnailUrl,
   alt,
   className,
   size,
@@ -47,26 +30,10 @@ export function SongThumbnail({
   fill,
   ...imageProps
 }: Props) {
-  const [qualityIndex, setQualityIndex] = useState(0);
   const [hasFailed, setHasFailed] = useState(false);
 
-  const advanceFallback = () => {
-    if (isLastFallback) {
-      setHasFailed(true);
-      return;
-    }
-
-    setQualityIndex((index) => index + 1);
-  };
-
-  const thumbnailQualities: readonly (
-    LargeThumbnailQuality | SmallThumbnailQuality
-  )[] =
-    size === "large" ? LARGE_THUMBNAIL_QUALITIES : SMALL_THUMBNAIL_QUALITIES;
-  const isLastFallback = qualityIndex === thumbnailQualities.length - 1;
   const defaultSizes: SongThumbnailImageSize =
     size === "large" ? "24rem" : "8rem";
-  const thumbnailUrl = `https://i.ytimg.com/vi/${songId}/${thumbnailQualities[qualityIndex]}.jpg`;
 
   if (hasFailed) {
     return (
@@ -84,7 +51,7 @@ export function SongThumbnail({
       sizes={sizes ?? defaultSizes}
       fill={fill !== undefined ? fill : true}
       className={cn("object-cover", className)}
-      onError={advanceFallback}
+      onError={() => setHasFailed(true)}
     />
   );
 }

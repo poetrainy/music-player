@@ -65,7 +65,7 @@ export function PlayerMiniPlayer() {
         <div className="relative size-10 shrink-0 overflow-hidden rounded">
           <SongThumbnail
             key={currentSong.id}
-            songId={currentSong.id}
+            thumbnailUrl={currentSong.thumbnailUrlSmall}
             alt={currentSong.title}
             size="small"
           />

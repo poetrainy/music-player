@@ -68,7 +68,7 @@ export function PlayerSongDetail() {
         <div className="relative aspect-square w-full max-w-80 overflow-hidden rounded-xl shadow-2xl shadow-black/60 md:max-w-full">
           <SongThumbnail
             key={currentSong.id}
-            songId={currentSong.id}
+            thumbnailUrl={currentSong.thumbnailUrlLarge}
             alt={currentSong.title}
             size="large"
             preload

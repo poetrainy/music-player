@@ -1,94 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { cache } from "react";
-import { Playlist, PlaylistSong } from "@/features/playlist/entity";
-import { getSongsByIds } from "@/features/song/api";
-import {
-  deleteYoutubeApi,
-  fetchYoutubeApi,
-  postYoutubeApi,
-  putYoutubeApi,
-} from "@/library";
+import { serviceAdapter } from "@/service/adapter";
+import { Playlist } from "@/features/playlist/entity";
 
-const getPlaylistSongs = async (
+export const getPlaylists = async (): Promise<Playlist[]> =>
+  serviceAdapter.getPlaylists();
+
+export const getPlaylistById = async (
   playlistId: string,
-): Promise<PlaylistSong[]> => {
-  const data =
-    await fetchYoutubeApi<gapi.client.youtube.PlaylistItemListResponse>(
-      "/playlistItems",
-      { part: "snippet", playlistId, maxResults: "50" },
-    );
-
-  const videoIds = (data.items ?? []).flatMap((item) => {
-    const videoId = item.snippet?.resourceId?.videoId;
-
-    return videoId ? [videoId] : [];
-  });
-  const songs = await getSongsByIds(videoIds);
-  const songsById = new Map(songs.map((song) => [song.id, song]));
-
-  return (data.items ?? []).flatMap((item) => {
-    const videoId = item.snippet?.resourceId?.videoId;
-    const song = videoId ? songsById.get(videoId) : undefined;
-
-    if (!song || !item.id) {
-      return [];
-    }
-
-    return [{ ...song, playlistItemId: item.id }];
-  });
-};
-
-const toPlaylistSummary = (
-  item: gapi.client.youtube.Playlist,
-): { id: string; title: string }[] => {
-  if (!item.id || !item.snippet?.title) {
-    return [];
-  }
-
-  return [{ id: item.id, title: item.snippet.title }];
-};
-
-export const getPlaylists = async (): Promise<Playlist[]> => {
-  const data = await fetchYoutubeApi<gapi.client.youtube.PlaylistListResponse>(
-    "/playlists",
-    { part: "snippet", mine: "true", maxResults: "50" },
-  );
-
-  const summaries = (data.items ?? [])
-    .flatMap(toPlaylistSummary)
-    .sort((a, b) => a.title.localeCompare(b.title, "ja"));
-
-  return Promise.all(
-    summaries.map(async (summary) => ({
-      ...summary,
-      songs: await getPlaylistSongs(summary.id),
-    })),
-  );
-};
-
-export const getPlaylistById = cache(
-  async (playlistId: string): Promise<Playlist | null> => {
-    const data =
-      await fetchYoutubeApi<gapi.client.youtube.PlaylistListResponse>(
-        "/playlists",
-        { part: "snippet", id: playlistId },
-      );
-
-    const item = data.items?.[0];
-    const summary = item ? toPlaylistSummary(item)[0] : undefined;
-
-    if (!summary) {
-      return null;
-    }
-
-    return {
-      ...summary,
-      songs: await getPlaylistSongs(summary.id),
-    };
-  },
-);
+): Promise<Playlist | null> => serviceAdapter.getPlaylistById(playlistId);
 
 export const registerPlaylistSong = async (
   formData: FormData,
@@ -96,53 +16,19 @@ export const registerPlaylistSong = async (
   const playlistId = String(formData.get("playlistId"));
   const songId = String(formData.get("songId"));
 
-  const result = await postYoutubeApi<gapi.client.youtube.PlaylistItem>(
-    "/playlistItems",
-    { part: "snippet" },
-    {
-      snippet: {
-        playlistId,
-        resourceId: {
-          kind: "youtube#video",
-          videoId: songId,
-        },
-      },
-    },
-  );
-
-  revalidatePath("/");
-  revalidatePath(`/playlists/${playlistId}`);
-
-  if (!result.id) {
-    throw new Error("プレイリストへの追加に失敗しました");
-  }
-
-  return result.id;
+  return serviceAdapter.registerPlaylistSong(playlistId, songId);
 };
 
 export const updatePlaylist = async (formData: FormData): Promise<void> => {
   const playlistId = String(formData.get("playlistId"));
   const title = String(formData.get("title"));
 
-  await putYoutubeApi<gapi.client.youtube.Playlist>(
-    "/playlists",
-    { part: "snippet" },
-    {
-      id: playlistId,
-      snippet: { title },
-    },
-  );
-
-  revalidatePath("/");
-  revalidatePath(`/playlists/${playlistId}`);
+  await serviceAdapter.updatePlaylist(playlistId, title);
 };
 
 export const deletePlaylistSong = async (formData: FormData): Promise<void> => {
   const playlistId = String(formData.get("playlistId"));
   const playlistItemId = String(formData.get("playlistItemId"));
 
-  await deleteYoutubeApi("/playlistItems", { id: playlistItemId });
-
-  revalidatePath("/");
-  revalidatePath(`/playlists/${playlistId}`);
+  await serviceAdapter.deletePlaylistSong(playlistId, playlistItemId);
 };

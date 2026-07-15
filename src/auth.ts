@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Google from "next-auth/providers/google";
+import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
 
 declare module "next-auth" {
   interface Session {
@@ -67,7 +68,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         params: {
           access_type: "offline",
           prompt: "consent",
-          scope: "openid email profile https://www.googleapis.com/auth/youtube",
+          // NOTE: 音楽サービスの vendor を差し替える場合、OAuth スコープもそのサービスに合わせて変更が必要
+          scope: `openid email profile ${YOUTUBE_AUTH_SCOPE}`,
         },
       },
     }),

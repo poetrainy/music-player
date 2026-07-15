@@ -37,7 +37,9 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
         song ? (
           <div key={song.id} className="relative">
             <SongThumbnail
-              songId={song.id}
+              thumbnailUrl={
+                size === "sm" ? song.thumbnailUrlSmall : song.thumbnailUrlLarge
+              }
               alt={song.title}
               size={size === "sm" ? "small" : "large"}
               sizes={size === "sm" ? "8rem" : "24rem"}

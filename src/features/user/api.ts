@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
+import { serviceAdapter } from "@/service/adapter";
 import { QuotaUsage, User } from "@/features/user/entity";
-import { getYoutubeQuotaUsage } from "@/library";
 
 export const getCurrentUser = async (): Promise<User> => {
   const session = await auth();
@@ -13,4 +13,4 @@ export const getCurrentUser = async (): Promise<User> => {
 };
 
 export const getQuotaUsage = async (): Promise<QuotaUsage> =>
-  getYoutubeQuotaUsage();
+  serviceAdapter.getQuotaUsage();
