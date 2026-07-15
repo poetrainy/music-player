@@ -57,6 +57,7 @@ interface YoutubeIframeApi {
   PlayerState: {
     CUED: number;
     ENDED: number;
+    PAUSED: number;
     PLAYING: number;
   };
 }
@@ -172,6 +173,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const isPlayerReadyRef = useRef(false);
   const currentSongRef = useRef<Song | null>(null);
   const shuffleOrderRef = useRef<Song[]>([]);
+  const isPlayingRef = useRef(false);
   const pathname = usePathname();
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [playlistId, setPlaylistId] = useState<string | null>(null);
@@ -201,6 +203,10 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   useEffect(() => {
     currentSongRef.current = currentSong;
   }, [currentSong]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   useEffect(() => {
     if (!currentSong) {
@@ -272,8 +278,10 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       if (restoreTime !== null) {
         playerRef.current.cueVideoById(currentSong.id, restoreTime);
         pendingRestoreTimeRef.current = null;
-      } else {
+      } else if (isPlayingRef.current) {
         playerRef.current.loadVideoById(currentSong.id);
+      } else {
+        playerRef.current.cueVideoById(currentSong.id);
       }
 
       return;
@@ -357,8 +365,17 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
               return;
             }
 
+            if (event.data === YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+              return;
+            }
+
+            if (event.data === YT.PlayerState.PAUSED) {
+              setIsPlaying(false);
+              return;
+            }
+
             if (event.data !== YT.PlayerState.ENDED) {
-              setIsPlaying(event.data === YT.PlayerState.PLAYING);
               return;
             }
 

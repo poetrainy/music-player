@@ -2,7 +2,7 @@
 
 YouTube Data API を利用した音楽プレイヤーです。Google アカウントでログインし、自分の YouTube プレイリストの曲を検索・追加・再生できます。
 
-機能の詳細は [機能仕様書](./docs/feature-specification.md) を参照してください。
+機能の詳細は [機能仕様書](./docs/機能仕様書.md) を参照してください。
 
 ## 技術スタック
 
@@ -44,5 +44,5 @@ bun run lint    # ESLint
 
 ## ドキュメント
 
-- [機能仕様書](./docs/feature-specification.md)
+- [機能仕様書](./docs/機能仕様書.md)
 - [コーディング規約 (CLAUDE.md)](./CLAUDE.md)
