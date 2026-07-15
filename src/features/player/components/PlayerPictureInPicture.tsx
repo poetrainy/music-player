@@ -104,7 +104,6 @@ export function PlayerPictureInPicture() {
       artwork: [
         {
           src: currentSong.thumbnailUrlLarge,
-          sizes: "480x360",
           type: "image/jpeg",
         },
       ],

@@ -8,7 +8,7 @@ import { cn } from "@/library";
 export const SONG_THUMBNAIL_SIZES = ["small", "large"] as const;
 export type SongThumbnailSize = (typeof SONG_THUMBNAIL_SIZES)[number];
 
-export const SONG_THUMBNAIL_IMAGE_SIZES = ["8rem", "24rem"] as const;
+export const SONG_THUMBNAIL_IMAGE_SIZES = ["8rem", "28rem"] as const;
 export type SongThumbnailImageSize =
   (typeof SONG_THUMBNAIL_IMAGE_SIZES)[number];
 
@@ -33,9 +33,9 @@ export function SongThumbnail({
   const [hasFailed, setHasFailed] = useState(false);
 
   const defaultSizes: SongThumbnailImageSize =
-    size === "large" ? "24rem" : "8rem";
+    size === "large" ? "28rem" : "8rem";
 
-  if (hasFailed) {
+  if (hasFailed || !thumbnailUrl) {
     return (
       <div className="bg-surface-elevated flex size-full items-center justify-center">
         <Music className="size-1/2 text-zinc-500" />
