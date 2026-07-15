@@ -63,7 +63,7 @@ export function PlayerPictureInPicture() {
     const thumbnail = new Image();
 
     thumbnail.crossOrigin = "anonymous";
-    thumbnail.src = `https://i.ytimg.com/vi/${currentSong.id}/hqdefault.jpg`;
+    thumbnail.src = currentSong.thumbnailUrlLarge;
     thumbnail.onload = () => {
       if (isCancelled) {
         return;
@@ -103,7 +103,7 @@ export function PlayerPictureInPicture() {
       artist: currentSong.artist,
       artwork: [
         {
-          src: `https://i.ytimg.com/vi/${currentSong.id}/hqdefault.jpg`,
+          src: currentSong.thumbnailUrlLarge,
           sizes: "480x360",
           type: "image/jpeg",
         },
