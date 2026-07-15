@@ -105,7 +105,7 @@ const mapPlayerState = (
     return "ended";
   }
 
-  // 起動中(UNSTARTED)・バッファリング中は再生/一時停止の見た目上のちらつきを避けるため通知しない
+  // NOTE: 起動中(UNSTARTED)・バッファリング中は再生/一時停止の見た目上のちらつきを避けるため通知しない
   return null;
 };
 

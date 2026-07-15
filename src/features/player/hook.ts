@@ -306,7 +306,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
         controller.setVolume(volumeRef.current);
 
-        // 起動時の再生エンジン読み込み待ちの間に曲が切り替わっていた場合、生成直後のコントローラーを最新の曲に合わせる
+        // NOTE: 起動時の再生エンジン読み込み待ちの間に曲が切り替わっていた場合、生成直後のコントローラーを最新の曲に合わせる
         const latestSong = currentSongRef.current;
 
         if (latestSong && latestSong.id !== currentSong.id) {
