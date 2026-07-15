@@ -14,6 +14,7 @@ import {
   PlaybackController,
 } from "@/service/player";
 import {
+  clearPlaybackState,
   createShuffleOrder,
   DEFAULT_VOLUME,
   getAdjacentSong,
@@ -94,6 +95,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   const goToSongOnEndRef = useRef<(song: Song) => void>(() => {});
   const pendingRestoreTimeRef = useRef<number | null>(null);
   const pendingPlayIntentRef = useRef(false);
+  const autoplayIntentRef = useRef(true);
   const isPlayerReadyRef = useRef(false);
   const currentSongRef = useRef<Song | null>(null);
   const shuffleOrderRef = useRef<Song[]>([]);
@@ -192,6 +194,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     }
 
     if (repeatModeRef.current === "one") {
+      autoplayIntentRef.current = true;
       playerRef.current?.seekTo(0, true);
       playerRef.current?.play();
       return;
@@ -251,11 +254,14 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       setDuration(0);
 
       if (restoreTime !== null) {
+        autoplayIntentRef.current = false;
         playerRef.current.cueTrack(currentSong.id, restoreTime);
         pendingRestoreTimeRef.current = null;
       } else if (isPlayingRef.current) {
+        autoplayIntentRef.current = true;
         playerRef.current.loadTrack(currentSong.id);
       } else {
+        autoplayIntentRef.current = false;
         playerRef.current.cueTrack(currentSong.id);
       }
 
@@ -269,15 +275,22 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
 
     const restoreTime = pendingRestoreTimeRef.current;
 
+    autoplayIntentRef.current = restoreTime === null;
     isPlayerReadyRef.current = false;
 
     createPlaybackController({
       containerId: PLAYER_CONTAINER_ID,
       trackId: currentSong.id,
-      autoplay: restoreTime === null,
+      autoplay: autoplayIntentRef.current,
       onStateChange: (state) => {
         if (state === "cued") {
           setDuration(playerRef.current?.getDuration() ?? 0);
+
+          // NOTE: cueTrack による意図的な一時停止ではなく、再生継続中に一時的に cued を経由しただけの場合は isPlaying を false に戻さない
+          if (autoplayIntentRef.current) {
+            return;
+          }
+
           setIsPlaying(false);
           return;
         }
@@ -288,6 +301,11 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
         }
 
         if (state === "paused") {
+          // NOTE: loadTrack による曲切り替え中に前の曲の paused が遅れて届くことがあるため、再生継続を意図している間は isPlaying を false に戻さない
+          if (autoplayIntentRef.current) {
+            return;
+          }
+
           setIsPlaying(false);
           return;
         }
@@ -313,9 +331,11 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
           const latestRestoreTime = pendingRestoreTimeRef.current;
 
           if (latestRestoreTime !== null) {
+            autoplayIntentRef.current = false;
             controller.cueTrack(latestSong.id, latestRestoreTime);
             pendingRestoreTimeRef.current = null;
           } else {
+            autoplayIntentRef.current = true;
             controller.loadTrack(latestSong.id);
           }
 
@@ -379,14 +399,32 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       nextPlaylistTitle: string,
       nextSongs: Song[],
     ) => {
+      if (!nextPlaylistId) {
+        // NOTE: 検索結果はプレイリストに紐づかず再生位置を保存しないため、古いプレイリストの再生履歴を再選択時に誤って使わないよう消しておく
+        clearPlaybackState();
+      }
+
+      const isSameSong = currentSongRef.current?.id === song.id;
+
       setPlaylistId(nextPlaylistId);
       setPlaylistTitle(nextPlaylistTitle);
       setSongs(nextSongs);
       setCurrentSong((previous) =>
         previous?.id === song.id ? previous : song,
       );
+      setIsPlaying(true);
       resetShuffleOrder(song, nextSongs);
       setActiveMobileView("player");
+
+      // NOTE: 同じ曲を選び直した場合は currentSong が変化せず読み込み用の effect が再実行されないため、ここで明示的に再生を再開する
+      if (isSameSong) {
+        if (playerRef.current && isPlayerReadyRef.current) {
+          autoplayIntentRef.current = true;
+          playerRef.current.play();
+        } else {
+          pendingPlayIntentRef.current = true;
+        }
+      }
 
       if (nextPlaylistId) {
         window.history.replaceState(
@@ -438,8 +476,10 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     }
 
     if (isPlaying) {
+      autoplayIntentRef.current = false;
       playerRef.current.pause();
     } else {
+      autoplayIntentRef.current = true;
       playerRef.current.play();
     }
   }, [isPlaying]);

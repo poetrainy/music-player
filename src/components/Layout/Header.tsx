@@ -13,7 +13,7 @@ interface Props {
 export function Header({ quota, user }: Props) {
   return (
     <header className="sticky top-0 z-40 w-full">
-      <div className="mx-auto flex max-w-300 items-center justify-between gap-3 p-4">
+      <div className="mx-auto flex max-w-300 items-center justify-between gap-3 px-4 py-3">
         <h1 className="shrink-0 text-lg font-bold">
           <Link
             href="/"

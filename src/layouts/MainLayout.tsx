@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/Layout/Header";
 import { PlayerMiniPlayer } from "@/features/player/components/PlayerMiniPlayer";
+import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { PlayerSongDetailDrawer } from "@/features/player/components/PlayerSongDetailDrawer";
 import { PlayerSongDetailPanel } from "@/features/player/components/PlayerSongDetailPanel";
 import { PlayerProvider } from "@/features/player/providers/PlayerProvider";
@@ -26,6 +27,7 @@ export function MainLayout({ children, quota, user }: Props) {
       </main>
       <PlayerMiniPlayer />
       <PlayerSongDetailDrawer />
+      <PlayerPlaybackRestore />
     </PlayerProvider>
   );
 }

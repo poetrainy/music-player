@@ -35,6 +35,10 @@ export const savePlaybackState = (state: StoredPlaybackState): void => {
   localStorage.setItem(PLAYBACK_STATE_STORAGE_KEY, JSON.stringify(state));
 };
 
+export const clearPlaybackState = (): void => {
+  localStorage.removeItem(PLAYBACK_STATE_STORAGE_KEY);
+};
+
 const isStoredSong = (value: unknown): value is Song => {
   if (typeof value !== "object" || value === null) {
     return false;

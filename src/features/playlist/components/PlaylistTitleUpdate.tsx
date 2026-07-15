@@ -77,7 +77,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex h-10 items-center justify-center gap-2">
       <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
         {title}
       </h1>

@@ -31,9 +31,11 @@ export function SongSummary({ song, isActive }: Props) {
           size="small"
           preload
         />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100">
-          <Play className="size-5 fill-zinc-400 text-zinc-400 transition-colors duration-200 group-hover:fill-white group-hover:text-white" />
-        </div>
+        {!isActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100">
+            <Play className="size-5 fill-zinc-400 text-zinc-400 transition-colors duration-200 group-hover:fill-white group-hover:text-white" />
+          </div>
+        )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <p className={cvaSongSummaryTitle({ isActive })}>{song.title}</p>
