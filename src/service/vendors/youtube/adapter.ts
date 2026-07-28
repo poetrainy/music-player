@@ -11,6 +11,7 @@ import {
 } from "@/service/vendors/youtube/api";
 import { Playlist, PlaylistSong } from "@/features/playlist/entity";
 import { Song } from "@/features/song/entity";
+import { chunkArray } from "@/library";
 
 const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
 
@@ -80,17 +81,26 @@ const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
   ];
 };
 
+// NOTE: videos.list の id パラメータは一度に指定できる件数が50件までのため、チャンクに分割して取得する
+const MAX_VIDEO_IDS_PER_REQUEST = 50;
+
 const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
   if (!songIds.length) {
     return [];
   }
 
-  const data = await fetchApi<gapi.client.youtube.VideoListResponse>(
-    "/videos",
-    { part: "snippet,contentDetails", id: songIds.join(","), hl: "ja" },
+  const idChunks = chunkArray(songIds, MAX_VIDEO_IDS_PER_REQUEST);
+  const responses = await Promise.all(
+    idChunks.map((idChunk) =>
+      fetchApi<gapi.client.youtube.VideoListResponse>("/videos", {
+        part: "snippet,contentDetails",
+        id: idChunk.join(","),
+        hl: "ja",
+      }),
+    ),
   );
-
-  const songs = await Promise.all((data.items ?? []).map(toSong));
+  const items = responses.flatMap((data) => data.items ?? []);
+  const songs = await Promise.all(items.map(toSong));
 
   return songs.flat();
 };
@@ -126,15 +136,37 @@ const searchSongs = async (query: string): Promise<Song[]> => {
   });
 };
 
+// NOTE: playlistItems.list は maxResults の上限が50件のため、nextPageToken を辿って全件取得する
+const fetchAllPlaylistItems = async (
+  playlistId: string,
+): Promise<gapi.client.youtube.PlaylistItem[]> => {
+  const items: gapi.client.youtube.PlaylistItem[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const data = await fetchApi<gapi.client.youtube.PlaylistItemListResponse>(
+      "/playlistItems",
+      {
+        part: "snippet",
+        playlistId,
+        maxResults: "50",
+        ...(pageToken ? { pageToken } : {}),
+      },
+    );
+
+    items.push(...(data.items ?? []));
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return items;
+};
+
 const getPlaylistSongs = async (
   playlistId: string,
 ): Promise<PlaylistSong[]> => {
-  const data = await fetchApi<gapi.client.youtube.PlaylistItemListResponse>(
-    "/playlistItems",
-    { part: "snippet", playlistId, maxResults: "50" },
-  );
+  const items = await fetchAllPlaylistItems(playlistId);
 
-  const videoIds = (data.items ?? []).flatMap((item) => {
+  const videoIds = items.flatMap((item) => {
     const videoId = item.snippet?.resourceId?.videoId;
 
     return videoId ? [videoId] : [];
@@ -142,7 +174,7 @@ const getPlaylistSongs = async (
   const songs = await getSongsByIds(videoIds);
   const songsById = new Map(songs.map((song) => [song.id, song]));
 
-  return (data.items ?? []).flatMap((item) => {
+  return items.flatMap((item) => {
     const videoId = item.snippet?.resourceId?.videoId;
     const song = videoId ? songsById.get(videoId) : undefined;
 
