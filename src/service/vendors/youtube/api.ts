@@ -40,7 +40,14 @@ export const getQuotaUsage = (): QuotaUsage => {
   };
 };
 
-const getAccessToken = async (): Promise<string> => {
+export interface AccessTokenContext {
+  accessToken: string;
+  // NOTE: ユーザーごとにキャッシュを分離するためのキー。トークン自体は更新のたびに
+  // 値が変わりキャッシュキーとして不安定なため、email を用いる
+  userCacheKey: string;
+}
+
+export const getAccessTokenContext = async (): Promise<AccessTokenContext> => {
   const session = await auth();
 
   // NOTE: リフレッシュに失敗したトークンをそのまま送ると 401 を返し続けるため、
@@ -50,7 +57,10 @@ const getAccessToken = async (): Promise<string> => {
     redirect("/signin");
   }
 
-  return session?.accessToken ?? "";
+  return {
+    accessToken: session?.accessToken ?? "",
+    userCacheKey: session?.user?.email ?? "",
+  };
 };
 
 const buildApiUrl = (
@@ -85,10 +95,10 @@ const throwApiError = async (response: Response): Promise<never> => {
 };
 
 export const fetchApi = async <T>(
+  accessToken: string,
   path: string,
   searchParams: Record<string, string>,
 ): Promise<T> => {
-  const accessToken = await getAccessToken();
   const url = buildApiUrl(path, searchParams);
 
   const response = await fetch(url, {
@@ -107,11 +117,11 @@ export const fetchApi = async <T>(
 };
 
 export const postApi = async <T>(
+  accessToken: string,
   path: string,
   searchParams: Record<string, string>,
   body: unknown,
 ): Promise<T> => {
-  const accessToken = await getAccessToken();
   const url = buildApiUrl(path, searchParams);
 
   const response = await fetch(url, {
@@ -135,11 +145,11 @@ export const postApi = async <T>(
 };
 
 export const putApi = async <T>(
+  accessToken: string,
   path: string,
   searchParams: Record<string, string>,
   body: unknown,
 ): Promise<T> => {
-  const accessToken = await getAccessToken();
   const url = buildApiUrl(path, searchParams);
 
   const response = await fetch(url, {
@@ -163,10 +173,10 @@ export const putApi = async <T>(
 };
 
 export const deleteApi = async (
+  accessToken: string,
   path: string,
   searchParams: Record<string, string>,
 ): Promise<void> => {
-  const accessToken = await getAccessToken();
   const url = buildApiUrl(path, searchParams);
 
   const response = await fetch(url, {

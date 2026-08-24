@@ -1,29 +1,27 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
+import { Playlist, PlaylistSong } from "@/features/playlist/entity";
+import { Song } from "@/features/song/entity";
+import { chunkArray } from "@/library";
 import { ServiceAdapter } from "@/service/adapter";
-import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
 import {
   deleteApi,
   fetchApi,
+  getAccessTokenContext,
   getQuotaUsage,
   postApi,
   putApi,
 } from "@/service/vendors/youtube/api";
-import { Playlist, PlaylistSong } from "@/features/playlist/entity";
-import { Song } from "@/features/song/entity";
-import { chunkArray } from "@/library";
+import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
+
+// NOTE: プレイリストの取得結果をユーザー横断でキャッシュしないよう、
+// unstable_cache のキーには必ずユーザーごとの識別子（userCacheKey）を含める
+const PLAYLISTS_CACHE_TAG = "youtube-playlists";
 
 const CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN = / - Topic$/;
 
 const trimChannelTopicSuffix = (channelTitle: string): string =>
   channelTitle.replace(CHANNEL_TITLE_TOPIC_SUFFIX_PATTERN, "");
-
-// NOTE: 優先度順。maxresdefault は未存在の動画も多いため、実際に取得できる画質を上から順にサーバー側で確認する
-const LARGE_THUMBNAIL_QUALITIES = [
-  "maxresdefault",
-  "sddefault",
-  "hqdefault",
-] as const;
 
 const buildThumbnailUrl = (videoId: string, quality: string): string =>
   `https://i.ytimg.com/vi/${videoId}/${quality}.jpg`;
@@ -39,32 +37,23 @@ const parseDurationSeconds = (duration: string | undefined): number => {
 
   const [, hours, minutes, seconds] = match;
 
-  return Number(hours ?? 0) * 3600 + Number(minutes ?? 0) * 60 + Number(seconds ?? 0);
+  return (
+    Number(hours ?? 0) * 3600 + Number(minutes ?? 0) * 60 + Number(seconds ?? 0)
+  );
 };
 
-const isThumbnailAvailable = async (url: string): Promise<boolean> => {
-  try {
-    const response = await fetch(url, { method: "HEAD" });
+// NOTE: videos.list のレスポンスに含まれる thumbnails は実際に生成済みの画質のみを返すため、
+// 優先度順に存在するものを選べば十分で、i.ytimg.com への疎通確認（HEADリクエスト）は不要
+const resolveLargeThumbnailUrl = (
+  videoId: string,
+  thumbnails: gapi.client.youtube.ThumbnailDetails | undefined,
+): string =>
+  thumbnails?.maxres?.url ??
+  thumbnails?.standard?.url ??
+  thumbnails?.high?.url ??
+  buildThumbnailUrl(videoId, "default");
 
-    return response.ok;
-  } catch {
-    return false;
-  }
-};
-
-const resolveLargeThumbnailUrl = async (videoId: string): Promise<string> => {
-  for (const quality of LARGE_THUMBNAIL_QUALITIES) {
-    const url = buildThumbnailUrl(videoId, quality);
-
-    if (await isThumbnailAvailable(url)) {
-      return url;
-    }
-  }
-
-  return buildThumbnailUrl(videoId, "default");
-};
-
-const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
+const toSong = (item: gapi.client.youtube.Video): Song[] => {
   if (!item.id || !item.snippet?.title) {
     return [];
   }
@@ -76,7 +65,10 @@ const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
       artist: trimChannelTopicSuffix(item.snippet.channelTitle ?? ""),
       durationSeconds: parseDurationSeconds(item.contentDetails?.duration),
       thumbnailUrlSmall: buildThumbnailUrl(item.id, "mqdefault"),
-      thumbnailUrlLarge: await resolveLargeThumbnailUrl(item.id),
+      thumbnailUrlLarge: resolveLargeThumbnailUrl(
+        item.id,
+        item.snippet.thumbnails,
+      ),
     },
   ];
 };
@@ -84,7 +76,10 @@ const toSong = async (item: gapi.client.youtube.Video): Promise<Song[]> => {
 // NOTE: videos.list の id パラメータは一度に指定できる件数が50件までのため、チャンクに分割して取得する
 const MAX_VIDEO_IDS_PER_REQUEST = 50;
 
-const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
+const getSongsByIds = async (
+  accessToken: string,
+  songIds: string[],
+): Promise<Song[]> => {
   if (!songIds.length) {
     return [];
   }
@@ -92,7 +87,7 @@ const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
   const idChunks = chunkArray(songIds, MAX_VIDEO_IDS_PER_REQUEST);
   const responses = await Promise.all(
     idChunks.map((idChunk) =>
-      fetchApi<gapi.client.youtube.VideoListResponse>("/videos", {
+      fetchApi<gapi.client.youtube.VideoListResponse>(accessToken, "/videos", {
         part: "snippet,contentDetails",
         id: idChunk.join(","),
         hl: "ja",
@@ -100,18 +95,21 @@ const getSongsByIds = async (songIds: string[]): Promise<Song[]> => {
     ),
   );
   const items = responses.flatMap((data) => data.items ?? []);
-  const songs = await Promise.all(items.map(toSong));
 
-  return songs.flat();
+  return items.flatMap(toSong);
 };
 
 // NOTE: search.list は contentDetails（再生時間）を返さないため、videos.list（getSongsByIds）を再利用して取得する。検索結果の順序は videoIds の並びで復元する
-const searchSongs = async (query: string): Promise<Song[]> => {
+const searchSongs = async (
+  accessToken: string,
+  query: string,
+): Promise<Song[]> => {
   if (!query.trim()) {
     return [];
   }
 
   const data = await fetchApi<gapi.client.youtube.SearchListResponse>(
+    accessToken,
     "/search",
     {
       part: "snippet",
@@ -126,7 +124,7 @@ const searchSongs = async (query: string): Promise<Song[]> => {
   const videoIds = (data.items ?? []).flatMap((item) =>
     item.id?.videoId ? [item.id.videoId] : [],
   );
-  const songs = await getSongsByIds(videoIds);
+  const songs = await getSongsByIds(accessToken, videoIds);
   const songsById = new Map(songs.map((song) => [song.id, song]));
 
   return videoIds.flatMap((videoId) => {
@@ -138,6 +136,7 @@ const searchSongs = async (query: string): Promise<Song[]> => {
 
 // NOTE: playlistItems.list は maxResults の上限が50件のため、nextPageToken を辿って全件取得する
 const fetchAllPlaylistItems = async (
+  accessToken: string,
   playlistId: string,
 ): Promise<gapi.client.youtube.PlaylistItem[]> => {
   const items: gapi.client.youtube.PlaylistItem[] = [];
@@ -145,6 +144,7 @@ const fetchAllPlaylistItems = async (
 
   do {
     const data = await fetchApi<gapi.client.youtube.PlaylistItemListResponse>(
+      accessToken,
       "/playlistItems",
       {
         part: "snippet",
@@ -162,16 +162,17 @@ const fetchAllPlaylistItems = async (
 };
 
 const getPlaylistSongs = async (
+  accessToken: string,
   playlistId: string,
 ): Promise<PlaylistSong[]> => {
-  const items = await fetchAllPlaylistItems(playlistId);
+  const items = await fetchAllPlaylistItems(accessToken, playlistId);
 
   const videoIds = items.flatMap((item) => {
     const videoId = item.snippet?.resourceId?.videoId;
 
     return videoId ? [videoId] : [];
   });
-  const songs = await getSongsByIds(videoIds);
+  const songs = await getSongsByIds(accessToken, videoIds);
   const songsById = new Map(songs.map((song) => [song.id, song]));
 
   return items.flatMap((item) => {
@@ -196,8 +197,9 @@ const toPlaylistSummary = (
   return [{ id: item.id, title: item.snippet.title }];
 };
 
-const getPlaylists = async (): Promise<Playlist[]> => {
+const fetchPlaylists = async (accessToken: string): Promise<Playlist[]> => {
   const data = await fetchApi<gapi.client.youtube.PlaylistListResponse>(
+    accessToken,
     "/playlists",
     { part: "snippet", mine: "true", maxResults: "50" },
   );
@@ -209,29 +211,56 @@ const getPlaylists = async (): Promise<Playlist[]> => {
   return Promise.all(
     summaries.map(async (summary) => ({
       ...summary,
-      songs: await getPlaylistSongs(summary.id),
+      songs: await getPlaylistSongs(accessToken, summary.id),
     })),
   );
 };
 
+const getPlaylists = async (): Promise<Playlist[]> => {
+  const { accessToken, userCacheKey } = await getAccessTokenContext();
+
+  // NOTE: accessToken はトークンリフレッシュのたびに変化しキャッシュキーとして
+  // 不安定なため、クロージャで渡しキーには含めない（userCacheKey のみをキーにする）
+  return unstable_cache(
+    async (_cacheKey: string) => fetchPlaylists(accessToken),
+    ["youtube-playlists"],
+    { tags: [PLAYLISTS_CACHE_TAG] },
+  )(userCacheKey);
+};
+
+const fetchPlaylistById = async (
+  accessToken: string,
+  playlistId: string,
+): Promise<Playlist | null> => {
+  const data = await fetchApi<gapi.client.youtube.PlaylistListResponse>(
+    accessToken,
+    "/playlists",
+    { part: "snippet", id: playlistId },
+  );
+
+  const item = data.items?.[0];
+  const summary = item ? toPlaylistSummary(item)[0] : undefined;
+
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    ...summary,
+    songs: await getPlaylistSongs(accessToken, summary.id),
+  };
+};
+
 const getPlaylistById = cache(
   async (playlistId: string): Promise<Playlist | null> => {
-    const data = await fetchApi<gapi.client.youtube.PlaylistListResponse>(
-      "/playlists",
-      { part: "snippet", id: playlistId },
-    );
+    const { accessToken, userCacheKey } = await getAccessTokenContext();
 
-    const item = data.items?.[0];
-    const summary = item ? toPlaylistSummary(item)[0] : undefined;
-
-    if (!summary) {
-      return null;
-    }
-
-    return {
-      ...summary,
-      songs: await getPlaylistSongs(summary.id),
-    };
+    return unstable_cache(
+      async (_cacheKey: string, playlistIdArg: string) =>
+        fetchPlaylistById(accessToken, playlistIdArg),
+      ["youtube-playlist-by-id"],
+      { tags: [PLAYLISTS_CACHE_TAG] },
+    )(userCacheKey, playlistId);
   },
 );
 
@@ -239,7 +268,9 @@ const registerPlaylistSong = async (
   playlistId: string,
   songId: string,
 ): Promise<string> => {
+  const { accessToken } = await getAccessTokenContext();
   const result = await postApi<gapi.client.youtube.PlaylistItem>(
+    accessToken,
     "/playlistItems",
     { part: "snippet" },
     {
@@ -253,6 +284,7 @@ const registerPlaylistSong = async (
     },
   );
 
+  updateTag(PLAYLISTS_CACHE_TAG);
   revalidatePath("/");
   revalidatePath(`/playlists/${playlistId}`);
 
@@ -267,7 +299,10 @@ const updatePlaylist = async (
   playlistId: string,
   title: string,
 ): Promise<void> => {
+  const { accessToken } = await getAccessTokenContext();
+
   await putApi<gapi.client.youtube.Playlist>(
+    accessToken,
     "/playlists",
     { part: "snippet" },
     {
@@ -276,6 +311,7 @@ const updatePlaylist = async (
     },
   );
 
+  updateTag(PLAYLISTS_CACHE_TAG);
   revalidatePath("/");
   revalidatePath(`/playlists/${playlistId}`);
 };
@@ -284,10 +320,25 @@ const deletePlaylistSong = async (
   playlistId: string,
   playlistItemId: string,
 ): Promise<void> => {
-  await deleteApi("/playlistItems", { id: playlistItemId });
+  const { accessToken } = await getAccessTokenContext();
 
+  await deleteApi(accessToken, "/playlistItems", { id: playlistItemId });
+
+  updateTag(PLAYLISTS_CACHE_TAG);
   revalidatePath("/");
   revalidatePath(`/playlists/${playlistId}`);
+};
+
+const getSongsByIdsWithAuth = async (songIds: string[]): Promise<Song[]> => {
+  const { accessToken } = await getAccessTokenContext();
+
+  return getSongsByIds(accessToken, songIds);
+};
+
+const searchSongsWithAuth = async (query: string): Promise<Song[]> => {
+  const { accessToken } = await getAccessTokenContext();
+
+  return searchSongs(accessToken, query);
 };
 
 export const youtubeAdapter: ServiceAdapter = {
@@ -297,7 +348,7 @@ export const youtubeAdapter: ServiceAdapter = {
   registerPlaylistSong,
   updatePlaylist,
   deletePlaylistSong,
-  getSongsByIds,
-  searchSongs,
+  getSongsByIds: getSongsByIdsWithAuth,
+  searchSongs: searchSongsWithAuth,
   getQuotaUsage: async () => getQuotaUsage(),
 };
