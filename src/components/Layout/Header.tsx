@@ -1,16 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Music, Search } from "lucide-react";
-import { QuotaRing } from "@/components/QuotaRing";
-import { QuotaUsage, User } from "@/features/user/entity";
+import { User } from "@/features/user/entity";
 import { SERVICE_NAME } from "@/library";
 
 interface Props {
-  quota: QuotaUsage;
   user: User;
 }
 
-export function Header({ quota, user }: Props) {
+export function Header({ user }: Props) {
   return (
     <header className="sticky top-0 z-40 w-full">
       <div className="mx-auto flex max-w-300 items-center justify-between gap-3 px-4 py-3">
@@ -43,21 +41,15 @@ export function Header({ quota, user }: Props) {
             aria-label="アカウント"
             className="shrink-0 active:opacity-70"
           >
-            <QuotaRing
-              size={44}
-              totalUnits={quota.totalUnits}
-              usedUnits={quota.usedUnits}
-            >
-              <div className="relative size-9 overflow-hidden rounded-full">
-                <Image
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  fill
-                  sizes="2.25rem"
-                  className="object-cover"
-                />
-              </div>
-            </QuotaRing>
+            <div className="relative size-9 overflow-hidden rounded-full">
+              <Image
+                src={user.avatarUrl}
+                alt={user.name}
+                fill
+                sizes="2.25rem"
+                className="object-cover"
+              />
+            </div>
           </Link>
         </nav>
       </div>

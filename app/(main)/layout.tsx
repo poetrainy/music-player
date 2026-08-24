@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getCurrentUser, getQuotaUsage } from "@/features/user/api";
+import { getCurrentUser } from "@/features/user/api";
 import { MainLayout } from "@/layouts/MainLayout";
 
 export default async function Layout({
@@ -14,11 +14,7 @@ export default async function Layout({
     redirect("/signin");
   }
 
-  const [user, quota] = await Promise.all([getCurrentUser(), getQuotaUsage()]);
+  const user = await getCurrentUser();
 
-  return (
-    <MainLayout quota={quota} user={user}>
-      {children}
-    </MainLayout>
-  );
+  return <MainLayout user={user}>{children}</MainLayout>;
 }

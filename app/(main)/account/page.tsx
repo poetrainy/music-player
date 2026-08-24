@@ -1,8 +1,8 @@
-import { getCurrentUser, getQuotaUsage } from "@/features/user/api";
+import { getCurrentUser } from "@/features/user/api";
 import { AccountComponent } from "@/features/user/pages/Account";
 
 export default async function Page() {
-  const [user, quota] = await Promise.all([getCurrentUser(), getQuotaUsage()]);
+  const user = await getCurrentUser();
 
-  return <AccountComponent quota={quota} user={user} />;
+  return <AccountComponent user={user} />;
 }

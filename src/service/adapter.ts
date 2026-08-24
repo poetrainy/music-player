@@ -1,16 +1,12 @@
-import { youtubeAdapter } from "@/service/vendors/youtube/adapter";
 import { Playlist } from "@/features/playlist/entity";
 import { Song } from "@/features/song/entity";
-import { QuotaUsage } from "@/features/user/entity";
+import { youtubeAdapter } from "@/service/vendors/youtube/adapter";
 
 export interface ServiceAdapter {
   authScope: string;
   getPlaylists: () => Promise<Playlist[]>;
   getPlaylistById: (playlistId: string) => Promise<Playlist | null>;
-  registerPlaylistSong: (
-    playlistId: string,
-    songId: string,
-  ) => Promise<string>;
+  registerPlaylistSong: (playlistId: string, songId: string) => Promise<string>;
   updatePlaylist: (playlistId: string, title: string) => Promise<void>;
   deletePlaylistSong: (
     playlistId: string,
@@ -18,7 +14,6 @@ export interface ServiceAdapter {
   ) => Promise<void>;
   getSongsByIds: (songIds: string[]) => Promise<Song[]>;
   searchSongs: (query: string) => Promise<Song[]>;
-  getQuotaUsage: () => Promise<QuotaUsage>;
 }
 
 // NOTE: 別のサービスに差し替える場合はここを新しい vendor の adapter に変更する。

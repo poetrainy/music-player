@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
-import { serviceAdapter } from "@/service/adapter";
-import { QuotaUsage, User } from "@/features/user/entity";
+import { User } from "@/features/user/entity";
 
 export const getCurrentUser = async (): Promise<User> => {
   const session = await auth();
@@ -11,6 +10,3 @@ export const getCurrentUser = async (): Promise<User> => {
     avatarUrl: session?.user?.image ?? "",
   };
 };
-
-export const getQuotaUsage = async (): Promise<QuotaUsage> =>
-  serviceAdapter.getQuotaUsage();

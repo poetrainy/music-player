@@ -8,7 +8,6 @@ import {
   deleteApi,
   fetchApi,
   getAccessTokenContext,
-  getQuotaUsage,
   postApi,
   putApi,
 } from "@/service/vendors/youtube/api";
@@ -420,5 +419,4 @@ export const youtubeAdapter: ServiceAdapter = {
   deletePlaylistSong,
   getSongsByIds: getSongsByIdsWithAuth,
   searchSongs: searchSongsWithAuth,
-  getQuotaUsage: async () => getQuotaUsage(),
 };

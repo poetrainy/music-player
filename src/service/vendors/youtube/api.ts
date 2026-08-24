@@ -1,44 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { QuotaUsage } from "@/features/user/entity";
 
 const API_BASE_URL = "https://www.googleapis.com/youtube/v3";
-const DAILY_QUOTA_UNITS = 10_000;
-const API_CALL_COST_UNITS = 1;
-
-let quotaUsageDate = "";
-let quotaUsageUnits = 0;
-
-const getTodayDateKey = (): string => new Date().toDateString();
-
-const recordApiUsage = (): void => {
-  const today = getTodayDateKey();
-
-  if (quotaUsageDate !== today) {
-    quotaUsageDate = today;
-    quotaUsageUnits = 0;
-  }
-
-  quotaUsageUnits += API_CALL_COST_UNITS;
-};
-
-export const getQuotaUsage = (): QuotaUsage => {
-  const today = getTodayDateKey();
-
-  if (quotaUsageDate !== today) {
-    quotaUsageDate = today;
-    quotaUsageUnits = 0;
-  }
-
-  const resetAt = new Date();
-  resetAt.setHours(24, 0, 0, 0);
-
-  return {
-    usedUnits: quotaUsageUnits,
-    totalUnits: DAILY_QUOTA_UNITS,
-    resetAt: resetAt.toISOString(),
-  };
-};
 
 export interface AccessTokenContext {
   accessToken: string;
@@ -105,8 +68,6 @@ export const fetchApi = async <T>(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
-  recordApiUsage();
-
   if (!response.ok) {
     await throwApiError(response);
   }
@@ -132,8 +93,6 @@ export const postApi = async <T>(
     },
     body: JSON.stringify(body),
   });
-
-  recordApiUsage();
 
   if (!response.ok) {
     await throwApiError(response);
@@ -161,8 +120,6 @@ export const putApi = async <T>(
     body: JSON.stringify(body),
   });
 
-  recordApiUsage();
-
   if (!response.ok) {
     await throwApiError(response);
   }
@@ -183,8 +140,6 @@ export const deleteApi = async (
     method: "DELETE",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-
-  recordApiUsage();
 
   if (!response.ok) {
     await throwApiError(response);

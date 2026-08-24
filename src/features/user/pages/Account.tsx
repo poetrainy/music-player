@@ -1,41 +1,12 @@
 import Image from "next/image";
-import { cva } from "class-variance-authority";
 import { logout } from "@/features/auth/api";
-import { QuotaUsage, User } from "@/features/user/entity";
+import { User } from "@/features/user/entity";
 
 interface Props {
-  quota: QuotaUsage;
   user: User;
 }
 
-type Level = "danger" | "warning" | "normal";
-
-const cvaAccountQuotaFill = cva(
-  "h-full rounded-full transition-[width] duration-500",
-  {
-    variants: {
-      level: {
-        danger: "bg-red-500",
-        warning: "bg-amber-500",
-        normal: "bg-brand",
-      },
-    },
-  },
-);
-
-export function AccountComponent({ quota, user }: Props) {
-  const ratio =
-    quota.totalUnits > 0 ? Math.min(quota.usedUnits / quota.totalUnits, 1) : 0;
-  const ratioPercent = Math.round(ratio * 100);
-  const level: Level =
-    ratio >= 0.9 ? "danger" : ratio >= 0.7 ? "warning" : "normal";
-  const resetAtLabel = new Intl.DateTimeFormat("ja-JP", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(quota.resetAt));
-
+export function AccountComponent({ user }: Props) {
   return (
     <div className="flex min-h-[calc(100dvh-11.25rem)] flex-col gap-8">
       <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
@@ -51,22 +22,6 @@ export function AccountComponent({ quota, user }: Props) {
         <div className="flex flex-col gap-1">
           <p className="text-foreground text-xl font-bold">{user.name}</p>
           <p className="text-sm text-zinc-400">{user.email}</p>
-        </div>
-        <div className="flex w-full max-w-sm flex-col gap-2 pt-6 text-left">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span>APIリクエスト使用量</span>
-            <span>
-              {quota.usedUnits.toLocaleString()} /{" "}
-              {quota.totalUnits.toLocaleString()}
-            </span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className={cvaAccountQuotaFill({ level })}
-              style={{ width: `${ratioPercent}%` }}
-            />
-          </div>
-          <p className="text-xs text-zinc-500">{resetAtLabel} にリセット</p>
         </div>
       </div>
       <form action={logout} className="flex justify-center">

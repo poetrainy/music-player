@@ -3,9 +3,3 @@ export interface User {
   email: string;
   avatarUrl: string;
 }
-
-export interface QuotaUsage {
-  usedUnits: number;
-  totalUnits: number;
-  resetAt: string;
-}
