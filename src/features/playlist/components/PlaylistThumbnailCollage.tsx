@@ -31,38 +31,10 @@ const getThumbnailUrl = (
 ): string =>
   size === "small" ? song.thumbnailUrlSmall : song.thumbnailUrlLarge;
 
-// NOTE: 同じサムネイル画像が複数タイルに並ぶと見た目が崩れるため、
-// 画像URLが重複する曲はスキップして次の曲から探す
-const selectDistinctThumbnailSongs = (
-  songs: Song[],
-  size: PlaylistThumbnailCollageSize,
-): Song[] => {
-  const usedThumbnailUrls = new Set<string>();
-  const distinctSongs: Song[] = [];
-
-  for (const song of songs) {
-    if (distinctSongs.length === COLLAGE_TILE_COUNT) {
-      break;
-    }
-
-    const thumbnailUrl = getThumbnailUrl(song, size);
-
-    if (usedThumbnailUrls.has(thumbnailUrl)) {
-      continue;
-    }
-
-    usedThumbnailUrls.add(thumbnailUrl);
-    distinctSongs.push(song);
-  }
-
-  return distinctSongs;
-};
-
 export function PlaylistThumbnailCollage({ songs, size }: Props) {
-  const distinctSongs = selectDistinctThumbnailSongs(songs, size);
   const tiles = Array.from(
     { length: COLLAGE_TILE_COUNT },
-    (_, index) => distinctSongs[index],
+    (_, index) => songs[index],
   );
 
   return (

@@ -13,7 +13,10 @@ export function PlaylistDetailComponent({ playlist }: Props) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="w-60">
-          <PlaylistThumbnailCollage songs={playlist.songs} size="large" />
+          <PlaylistThumbnailCollage
+            songs={playlist.collageSongs}
+            size="large"
+          />
         </div>
         <div className="flex w-full flex-col gap-1">
           <p className="text-xs font-semibold text-zinc-400">プレイリスト</p>

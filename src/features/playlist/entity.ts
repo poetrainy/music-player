@@ -8,4 +8,6 @@ export interface Playlist {
   id: string;
   title: string;
   songs: PlaylistSong[];
+  // NOTE: コラージュ表示用に、サムネイル画像が重複しないよう選び出した曲（最大4件）
+  collageSongs: PlaylistSong[];
 }

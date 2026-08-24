@@ -47,7 +47,7 @@ export function PlaylistCard({ playlist, viewMode }: Props) {
       className={cvaPlaylistCardLink({ viewMode, isCurrentPlaylist })}
     >
       <PlaylistThumbnailCollage
-        songs={playlist.songs}
+        songs={playlist.collageSongs}
         size={viewMode === "grid" ? "large" : "small"}
       />
       <div className="flex min-w-0 flex-col">
