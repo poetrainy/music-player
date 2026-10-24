@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Google from "next-auth/providers/google";
+import { isAllowedEmail, parseAllowedEmails } from "@/features/auth/library";
 import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
 
 declare module "next-auth" {
@@ -75,6 +76,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    signIn: ({ profile }) =>
+      profile?.email_verified === true &&
+      isAllowedEmail(
+        profile.email,
+        parseAllowedEmails(process.env.AUTH_ALLOWED_EMAIL_LOCAL_PARTS),
+      ),
     jwt: async ({ token, account }) => {
       if (account) {
         return {
