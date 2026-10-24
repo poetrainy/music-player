@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getEmbedSession } from "@/features/embed/api";
 import { getCurrentUser } from "@/features/user/api";
 import { MainLayout } from "@/layouts/MainLayout";
 
@@ -10,7 +11,8 @@ export default async function Layout({
 }>) {
   const session = await auth();
 
-  if (!session) {
+  // NOTE: 埋め込み表示ではログイン画面を開けないため、埋め込み用のセッションでも表示を許可する
+  if (!session && !(await getEmbedSession())) {
     redirect("/signin");
   }
 

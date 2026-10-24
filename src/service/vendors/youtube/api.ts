@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getEmbedAccessToken, getEmbedSession } from "@/features/embed/api";
 
 const API_BASE_URL = "https://www.googleapis.com/youtube/v3";
 
@@ -12,6 +13,19 @@ export interface AccessTokenContext {
 
 export const getAccessTokenContext = async (): Promise<AccessTokenContext> => {
   const session = await auth();
+
+  if (!session) {
+    const embedSession = await getEmbedSession();
+    const accessToken = embedSession
+      ? await getEmbedAccessToken(embedSession.refreshToken)
+      : null;
+
+    if (!embedSession || !accessToken) {
+      redirect("/signin");
+    }
+
+    return { accessToken, userCacheKey: embedSession.user.email };
+  }
 
   // NOTE: リフレッシュに失敗したトークンをそのまま送ると 401 を返し続けるため、
   // 検知した時点でサインイン画面へ再誘導する。Server Component のレンダー中にも
