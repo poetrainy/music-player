@@ -80,7 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       profile?.email_verified === true &&
       isAllowedEmail(
         profile.email,
-        parseAllowedEmails(process.env.AUTH_ALLOWED_EMAIL_LOCAL_PARTS),
+        parseAllowedEmails(process.env.AUTH_ALLOWED_EMAIL_NAMES),
       ),
     jwt: async ({ token, account }) => {
       if (account) {
