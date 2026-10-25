@@ -34,8 +34,8 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        client_id: process.env.AUTH_GOOGLE_CLIENT_ID ?? "",
-        client_secret: process.env.AUTH_GOOGLE_CLIENT_SECRET ?? "",
+        client_id: process.env.AUTH_GOOGLE_ID ?? "",
+        client_secret: process.env.AUTH_GOOGLE_SECRET ?? "",
         grant_type: "refresh_token",
         refresh_token: token.refreshToken ?? "",
       }),
@@ -63,8 +63,6 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
-      clientId: process.env.AUTH_GOOGLE_CLIENT_ID,
-      clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           access_type: "offline",
