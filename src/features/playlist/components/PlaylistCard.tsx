@@ -54,9 +54,7 @@ export function PlaylistCard({ playlist, viewMode }: Props) {
         <p className={cvaPlaylistCardTitle({ isCurrentPlaylist })}>
           {playlist.title}
         </p>
-        <p className="text-muted truncate text-xs">
-          プレイリスト・{playlist.songs.length}曲
-        </p>
+        <p className="text-muted truncate text-xs">{playlist.songs.length}曲</p>
       </div>
     </Link>
   );
