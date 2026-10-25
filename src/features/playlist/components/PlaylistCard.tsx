@@ -17,7 +17,7 @@ interface Props {
 const cvaPlaylistCardLink = cva("flex transition-colors", {
   variants: {
     viewMode: {
-      grid: "flex-col gap-3 rounded-lg p-3",
+      grid: "flex-col gap-3 rounded-lg p-1 md:p-3",
       list: "items-center gap-3 rounded-md p-2 md:p-2.5",
     },
     isCurrentPlaylist: {

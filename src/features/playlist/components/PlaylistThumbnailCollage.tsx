@@ -19,7 +19,8 @@ const cvaPlaylistThumbnailCollage = cva(
     variants: {
       size: {
         small: "size-12 md:size-16 rounded",
-        large: "aspect-square w-full rounded-lg shadow-lg shadow-black/40",
+        large:
+          "aspect-square w-full rounded-lg shadow-md sm:shadow-lg shadow-black/40",
       },
     },
   },
