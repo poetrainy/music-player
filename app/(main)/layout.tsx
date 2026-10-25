@@ -15,9 +15,11 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  // NOTE: 埋め込み用のセッションの Cookie は埋め込み元ごとに分けて保存されるため、これがある場合は iframe 内での表示とみなす
+  const isEmbedded = !!(await getEmbedSession());
 
   // NOTE: 埋め込み表示ではログイン画面を開けないため、埋め込み用のセッションでも表示を許可する
-  if (!session && !(await getEmbedSession())) {
+  if (!session && !isEmbedded) {
     redirect("/signin");
   }
 
@@ -31,7 +33,9 @@ export default async function Layout({
         baseColor={embedBaseColor}
         brandColor={embedBrandColor}
       />
-      <MainLayout user={user}>{children}</MainLayout>
+      <MainLayout user={user} isEmbedded={isEmbedded}>
+        {children}
+      </MainLayout>
     </>
   );
 }

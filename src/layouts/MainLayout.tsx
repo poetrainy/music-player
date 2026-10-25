@@ -12,12 +12,13 @@ import { User } from "@/features/user/entity";
 interface Props {
   children: ReactNode;
   user: User;
+  isEmbedded: boolean;
 }
 
-export function MainLayout({ children, user }: Props) {
+export function MainLayout({ children, user, isEmbedded }: Props) {
   return (
     <PlayerProvider userEmail={user.email}>
-      <Header user={user} />
+      <Header user={user} isEmbedded={isEmbedded} />
       <main className="mx-auto w-full max-w-300 px-4 pt-6 pb-20">
         <div className="flex items-start gap-6">
           <div className="min-w-0 flex-1">{children}</div>
