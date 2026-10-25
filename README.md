@@ -52,13 +52,18 @@ Google Cloud Console の OAuth クライアントには、認可済みリダイ�
 ></iframe>
 ```
 
-`color` パラメータに Tailwind のカラー名（例: `pink`・`sky`）を付けると、背景・文字の色を変更できます。濃さは指定せず、背景・文字のグレー（既定は `zinc`）が指定した色の同じ段階に置き換わります。アクセントカラー（`purple-500`）は変わりません。指定がない場合や該当するカラーがない場合は、既定の色（`zinc`）で表示します。
+以下のパラメータに Tailwind のカラー名（例: `pink`・`sky`）を付けると、色を変更できます。濃さは指定しません。指定がない場合や該当するカラーがない場合は、既定の色で表示します。
 
-`theme` パラメータに `light` を付けるとライトモードで表示します（`dark` または指定なしの場合はダークモード）。`color` と組み合わせることもできます（例: `?ticket=<チケット>&color=pink&theme=light`）。
+| パラメータ | 変更対象         | 既定     | 置き換わり方                                                       |
+| ---------- | ---------------- | -------- | ------------------------------------------------------------------ |
+| `base`     | 背景・文字       | `zinc`   | アプリ内で使っている各段階が、指定した色の同じ段階に置き換わります |
+| `brand`    | アクセントカラー | `purple` | 指定した色の `500` に置き換わります                                |
+
+`theme` パラメータに `light` を付けるとライトモードで表示します（`dark` または指定なしの場合はダークモード）。`base`・`brand` と組み合わせることもできます（例: `?ticket=<チケット>&base=stone&brand=pink&theme=light`）。
 
 ```html
 <iframe
-  src="https://<このアプリのドメイン>/embed?ticket=<チケット>&color=pink"
+  src="https://<このアプリのドメイン>/embed?ticket=<チケット>&base=stone&brand=pink"
   title="ミュージックプレーヤー"
   allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
 ></iframe>

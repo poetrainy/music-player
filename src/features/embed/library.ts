@@ -8,7 +8,8 @@ import {
 } from "@/features/embed/entity";
 
 export const EMBED_COOKIE_NAME = "music-player-embed";
-export const EMBED_COLOR_COOKIE_NAME = "music-player-embed-color";
+export const EMBED_BASE_COLOR_COOKIE_NAME = "music-player-embed-base-color";
+export const EMBED_BRAND_COLOR_COOKIE_NAME = "music-player-embed-brand-color";
 export const EMBED_THEME_COOKIE_NAME = "music-player-embed-theme";
 export const EMBED_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
@@ -23,9 +24,14 @@ export const EMBED_COOKIE_OPTIONS = {
   maxAge: EMBED_SESSION_MAX_AGE_SECONDS,
 } as const;
 
-export const EMBED_COLOR_COOKIE_OPTIONS = {
+export const EMBED_BASE_COLOR_COOKIE_OPTIONS = {
   ...EMBED_COOKIE_OPTIONS,
-  name: EMBED_COLOR_COOKIE_NAME,
+  name: EMBED_BASE_COLOR_COOKIE_NAME,
+} as const;
+
+export const EMBED_BRAND_COLOR_COOKIE_OPTIONS = {
+  ...EMBED_COOKIE_OPTIONS,
+  name: EMBED_BRAND_COLOR_COOKIE_NAME,
 } as const;
 
 export const EMBED_THEME_COOKIE_OPTIONS = {

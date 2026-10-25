@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  EMBED_COLOR_COOKIE_OPTIONS,
+  EMBED_BASE_COLOR_COOKIE_OPTIONS,
+  EMBED_BRAND_COLOR_COOKIE_OPTIONS,
   EMBED_COOKIE_OPTIONS,
   EMBED_SESSION_MAX_AGE_SECONDS,
   EMBED_THEME_COOKIE_OPTIONS,
@@ -31,14 +32,27 @@ export const GET = async (request: NextRequest) => {
     ),
   });
 
-  const color = parseEmbedColor(request.nextUrl.searchParams.get("color"));
+  const baseColor = parseEmbedColor(request.nextUrl.searchParams.get("base"));
+  const brandColor = parseEmbedColor(request.nextUrl.searchParams.get("brand"));
   const theme = parseEmbedTheme(request.nextUrl.searchParams.get("theme"));
 
   // NOTE: 指定がない・不正な値の場合は以前の指定を残さず、既定の表示に戻す
-  if (color) {
-    response.cookies.set({ ...EMBED_COLOR_COOKIE_OPTIONS, value: color });
+  if (baseColor) {
+    response.cookies.set({
+      ...EMBED_BASE_COLOR_COOKIE_OPTIONS,
+      value: baseColor,
+    });
   } else {
-    response.cookies.delete(EMBED_COLOR_COOKIE_OPTIONS);
+    response.cookies.delete(EMBED_BASE_COLOR_COOKIE_OPTIONS);
+  }
+
+  if (brandColor) {
+    response.cookies.set({
+      ...EMBED_BRAND_COLOR_COOKIE_OPTIONS,
+      value: brandColor,
+    });
+  } else {
+    response.cookies.delete(EMBED_BRAND_COLOR_COOKIE_OPTIONS);
   }
 
   if (theme) {

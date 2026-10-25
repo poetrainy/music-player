@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  EMBED_COLOR_COOKIE_NAME,
-  EMBED_COLOR_COOKIE_OPTIONS,
+  EMBED_BASE_COLOR_COOKIE_NAME,
+  EMBED_BASE_COLOR_COOKIE_OPTIONS,
+  EMBED_BRAND_COLOR_COOKIE_NAME,
+  EMBED_BRAND_COLOR_COOKIE_OPTIONS,
   EMBED_COOKIE_NAME,
   EMBED_COOKIE_OPTIONS,
   EMBED_SESSION_MAX_AGE_SECONDS,
@@ -38,16 +40,29 @@ export const proxy = async (request: NextRequest) => {
     ),
   });
 
-  const color = parseEmbedColor(
-    request.cookies.get(EMBED_COLOR_COOKIE_NAME)?.value,
+  const baseColor = parseEmbedColor(
+    request.cookies.get(EMBED_BASE_COLOR_COOKIE_NAME)?.value,
+  );
+  const brandColor = parseEmbedColor(
+    request.cookies.get(EMBED_BRAND_COLOR_COOKIE_NAME)?.value,
   );
 
   const theme = parseEmbedTheme(
     request.cookies.get(EMBED_THEME_COOKIE_NAME)?.value,
   );
 
-  if (color) {
-    response.cookies.set({ ...EMBED_COLOR_COOKIE_OPTIONS, value: color });
+  if (baseColor) {
+    response.cookies.set({
+      ...EMBED_BASE_COLOR_COOKIE_OPTIONS,
+      value: baseColor,
+    });
+  }
+
+  if (brandColor) {
+    response.cookies.set({
+      ...EMBED_BRAND_COLOR_COOKIE_OPTIONS,
+      value: brandColor,
+    });
   }
 
   if (theme) {

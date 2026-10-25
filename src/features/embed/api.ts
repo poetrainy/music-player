@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { EmbedColor, EmbedSession, EmbedTheme } from "@/features/embed/entity";
 import {
-  EMBED_COLOR_COOKIE_NAME,
+  EMBED_BASE_COLOR_COOKIE_NAME,
+  EMBED_BRAND_COLOR_COOKIE_NAME,
   EMBED_COOKIE_NAME,
   EMBED_THEME_COOKIE_NAME,
   decryptEmbedSession,
@@ -33,8 +34,11 @@ export const getEmbedSession = async (): Promise<EmbedSession | null> => {
   return decryptEmbedSession(token, secret);
 };
 
-export const getEmbedColor = async (): Promise<EmbedColor | null> =>
-  parseEmbedColor((await cookies()).get(EMBED_COLOR_COOKIE_NAME)?.value);
+export const getEmbedBaseColor = async (): Promise<EmbedColor | null> =>
+  parseEmbedColor((await cookies()).get(EMBED_BASE_COLOR_COOKIE_NAME)?.value);
+
+export const getEmbedBrandColor = async (): Promise<EmbedColor | null> =>
+  parseEmbedColor((await cookies()).get(EMBED_BRAND_COLOR_COOKIE_NAME)?.value);
 
 // NOTE: 指定がない場合は通常表示と同じダークテーマで表示する
 export const getEmbedTheme = async (): Promise<EmbedTheme> =>
