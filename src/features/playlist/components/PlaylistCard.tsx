@@ -21,8 +21,8 @@ const cvaPlaylistCardLink = cva("flex transition-colors", {
       list: "items-center gap-3 rounded-md p-2 md:p-2.5",
     },
     isCurrentPlaylist: {
-      true: "bg-surface-elevated",
-      false: "hover:bg-surface-elevated active:bg-surface-elevated",
+      true: "bg-solid",
+      false: "hover:bg-solid active:bg-solid",
     },
   },
 });
@@ -31,7 +31,7 @@ const cvaPlaylistCardTitle = cva("truncate text-sm font-bold", {
   variants: {
     isCurrentPlaylist: {
       true: "text-brand",
-      false: "text-foreground",
+      false: "text-contrast",
     },
   },
 });
@@ -54,7 +54,7 @@ export function PlaylistCard({ playlist, viewMode }: Props) {
         <p className={cvaPlaylistCardTitle({ isCurrentPlaylist })}>
           {playlist.title}
         </p>
-        <p className="truncate text-xs text-zinc-400">
+        <p className="text-muted truncate text-xs">
           プレイリスト・{playlist.songs.length}曲
         </p>
       </div>

@@ -20,14 +20,14 @@ export function AccountComponent({ user }: Props) {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <p className="text-foreground text-xl font-bold">{user.name}</p>
-          <p className="text-sm text-zinc-400">{user.email}</p>
+          <p className="text-contrast text-xl font-bold">{user.name}</p>
+          <p className="text-muted text-sm">{user.email}</p>
         </div>
       </div>
       <form action={logout} className="flex justify-center">
         <button
           type="submit"
-          className="text-foreground hover:bg-surface-elevated active:bg-surface-elevated/70 rounded-full border border-white/10 px-8 py-3 text-sm font-semibold"
+          className="text-contrast hover:bg-solid active:bg-solid/70 border-contrast/10 rounded-full border px-8 py-3 text-sm font-semibold"
         >
           ログアウト
         </button>

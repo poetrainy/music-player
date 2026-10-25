@@ -5,17 +5,17 @@ export function SignInComponent() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-8 p-6 text-center">
       <div className="flex flex-col gap-2">
-        <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
+        <h1 className="text-contrast text-2xl font-extrabold tracking-tight">
           {SERVICE_NAME}
         </h1>
-        <p className="text-sm text-zinc-400">
+        <p className="text-muted text-sm">
           Googleアカウントでログインしてください
         </p>
       </div>
       <form action={loginWithGoogle}>
         <button
           type="submit"
-          className="flex items-center gap-3 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black active:bg-zinc-300"
+          className="bg-contrast text-surface active:bg-contrast/80 flex items-center gap-3 rounded-full px-6 py-3 text-sm font-semibold"
         >
           <svg viewBox="0 0 24 24" className="size-5">
             <path

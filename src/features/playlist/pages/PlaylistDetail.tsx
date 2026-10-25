@@ -19,12 +19,12 @@ export function PlaylistDetailComponent({ playlist }: Props) {
           />
         </div>
         <div className="flex w-full flex-col gap-1">
-          <p className="text-xs font-semibold text-zinc-400">プレイリスト</p>
+          <p className="text-muted text-xs font-semibold">プレイリスト</p>
           <PlaylistTitleUpdate
             playlistId={playlist.id}
             title={playlist.title}
           />
-          <p className="text-sm text-zinc-400">{playlist.songs.length}曲</p>
+          <p className="text-muted text-sm">{playlist.songs.length}曲</p>
         </div>
         <PlaylistPlayButton
           playlistId={playlist.id}

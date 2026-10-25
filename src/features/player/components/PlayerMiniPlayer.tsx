@@ -39,10 +39,10 @@ export function PlayerMiniPlayer() {
   const isSidebarShowing = hasSidebar && activeMobileView === "player";
   const songInfo = (
     <div className="flex min-w-0 flex-col">
-      <p className="text-foreground truncate text-sm font-medium">
+      <p className="text-contrast truncate text-sm font-medium">
         {currentSong.title}
       </p>
-      <p className="truncate text-xs text-zinc-400">
+      <p className="text-muted truncate text-xs">
         {playlistId
           ? `${currentSong.artist}・${playlistTitle}`
           : currentSong.artist}
@@ -51,7 +51,7 @@ export function PlayerMiniPlayer() {
   );
 
   return (
-    <div className="bg-surface-elevated fixed inset-x-0 bottom-0 z-50">
+    <div className="bg-solid fixed inset-x-0 bottom-0 z-50">
       <input
         type="range"
         min={0}
@@ -59,7 +59,7 @@ export function PlayerMiniPlayer() {
         value={currentTime}
         onChange={(event) => seekTo(Number(event.target.value))}
         aria-label="再生位置"
-        className="accent-brand m-0 block h-0.5 w-full cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:opacity-0 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:opacity-0"
+        className="accent-brand m-0 block h-0.5 w-full cursor-pointer [&::-moz-range-thumb]:size-0 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:opacity-0 [&::-webkit-slider-thumb]:size-0 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:opacity-0"
       />
       <div className="mx-auto flex max-w-300 items-center gap-4 px-4 py-2">
         <div className="relative size-10 shrink-0 overflow-hidden rounded">
@@ -92,7 +92,7 @@ export function PlayerMiniPlayer() {
                 type="button"
                 onClick={playPrevious}
                 aria-label="前の曲"
-                className="text-foreground"
+                className="text-contrast"
               >
                 <SkipBack className="size-5" fill="currentColor" />
               </IconButton>
@@ -114,7 +114,7 @@ export function PlayerMiniPlayer() {
                 type="button"
                 onClick={playNext}
                 aria-label="次の曲"
-                className="text-foreground"
+                className="text-contrast"
               >
                 <SkipForward className="size-5" fill="currentColor" />
               </IconButton>

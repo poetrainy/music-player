@@ -16,7 +16,7 @@ const cvaSongSummaryTitle = cva("truncate text-sm font-medium", {
   variants: {
     isActive: {
       true: "text-brand",
-      false: "text-foreground",
+      false: "text-contrast",
     },
   },
 });
@@ -24,7 +24,7 @@ const cvaSongSummaryTitle = cva("truncate text-sm font-medium", {
 export function SongSummary({ song, isActive }: Props) {
   return (
     <>
-      <div className="bg-surface-elevated relative size-12 shrink-0 overflow-hidden rounded">
+      <div className="bg-solid relative size-12 shrink-0 overflow-hidden rounded">
         <SongThumbnail
           thumbnailUrl={song.thumbnailUrlSmall}
           alt={song.title}
@@ -39,9 +39,9 @@ export function SongSummary({ song, isActive }: Props) {
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className={cvaSongSummaryTitle({ isActive })}>{song.title}</p>
-        <p className="truncate text-xs text-zinc-400">{song.artist}</p>
+        <p className="text-muted truncate text-xs">{song.artist}</p>
       </div>
-      <span className="shrink-0 text-xs text-zinc-500">
+      <span className="text-muted shrink-0 text-xs">
         {formatDuration(song.durationSeconds)}
       </span>
     </>

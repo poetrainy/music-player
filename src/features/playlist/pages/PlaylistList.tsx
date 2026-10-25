@@ -58,7 +58,7 @@ export function PlaylistListComponent({ playlists }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
+        <h1 className="text-contrast text-2xl font-extrabold tracking-tight">
           プレイリスト
         </h1>
         <PlaylistViewModeToggle

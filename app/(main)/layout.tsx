@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getEmbedSession } from "@/features/embed/api";
+import { getEmbedColor, getEmbedSession } from "@/features/embed/api";
+import { EmbedColorStyle } from "@/features/embed/components/EmbedColorStyle";
 import { getCurrentUser } from "@/features/user/api";
 import { MainLayout } from "@/layouts/MainLayout";
 
@@ -17,6 +18,12 @@ export default async function Layout({
   }
 
   const user = await getCurrentUser();
+  const embedColor = await getEmbedColor();
 
-  return <MainLayout user={user}>{children}</MainLayout>;
+  return (
+    <>
+      {embedColor && <EmbedColorStyle color={embedColor} />}
+      <MainLayout user={user}>{children}</MainLayout>
+    </>
+  );
 }

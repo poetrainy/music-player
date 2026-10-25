@@ -27,8 +27,8 @@
 
 ```bash
 AUTH_SECRET=                  # `npx auth secret` などで生成
-AUTH_GOOGLE_CLIENT_ID=        # Google Cloud Console で発行
-AUTH_GOOGLE_CLIENT_SECRET=    # Google Cloud Console で発行
+AUTH_GOOGLE_ID=               # Google Cloud Console で発行
+AUTH_GOOGLE_SECRET=           # Google Cloud Console で発行
 EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み元がチケットの暗号化に使う値と同じにします
 ```
 
@@ -47,6 +47,18 @@ Google Cloud Console の OAuth クライアントには、認可済みリダイ�
 ```html
 <iframe
   src="https://<このアプリのドメイン>/embed?ticket=<チケット>"
+  title="ミュージックプレーヤー"
+  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+></iframe>
+```
+
+`color` パラメータに Tailwind のカラー名（例: `pink`・`sky`）を付けると、背景・文字の色を変更できます。濃さは指定せず、背景・文字のグレー（既定は `zinc`）が指定した色の同じ段階に置き換わります。アクセントカラー（`purple-500`）は変わりません。指定がない場合や該当するカラーがない場合は、既定の色（`zinc`）で表示します。
+
+`theme` パラメータに `light` を付けるとライトモードで表示します（`dark` または指定なしの場合はダークモード）。`color` と組み合わせることもできます（例: `?ticket=<チケット>&color=pink&theme=light`）。
+
+```html
+<iframe
+  src="https://<このアプリのドメイン>/embed?ticket=<チケット>&color=pink"
   title="ミュージックプレーヤー"
   allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
 ></iframe>

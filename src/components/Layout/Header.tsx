@@ -15,7 +15,7 @@ export function Header({ user }: Props) {
         <h1 className="shrink-0 text-lg font-bold">
           <Link
             href="/"
-            className="text-foreground hidden items-center gap-2 transition-colors hover:text-zinc-300 active:text-zinc-400 md:flex"
+            className="text-contrast hover:text-muted active:text-muted hidden items-center gap-2 transition-colors md:flex"
           >
             <Music className="size-6" />
             <span>{SERVICE_NAME}</span>
@@ -23,7 +23,7 @@ export function Header({ user }: Props) {
           <Link
             href="/"
             aria-label={SERVICE_NAME}
-            className="text-foreground flex items-center transition-colors hover:text-zinc-300 active:text-zinc-400 md:hidden"
+            className="text-contrast hover:text-muted active:text-muted flex items-center transition-colors md:hidden"
           >
             <Music className="size-6" />
           </Link>
@@ -31,7 +31,7 @@ export function Header({ user }: Props) {
         <nav className="flex items-center gap-3">
           <Link
             href="/search"
-            className="text-foreground flex size-9 shrink-0 items-center justify-center rounded active:bg-white/10"
+            className="text-contrast active:bg-contrast/10 flex size-9 shrink-0 items-center justify-center rounded"
             aria-label="検索"
           >
             <Search className="size-6" />

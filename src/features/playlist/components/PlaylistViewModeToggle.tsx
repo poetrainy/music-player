@@ -21,7 +21,7 @@ export function PlaylistViewModeToggle({ onChange, viewMode }: Props) {
       aria-label={
         viewMode === "grid" ? "リスト表示に切り替え" : "グリッド表示に切り替え"
       }
-      className="text-zinc-400"
+      className="text-muted"
     >
       {viewMode === "grid" ? (
         <LayoutGrid className="size-5" />

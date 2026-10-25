@@ -21,7 +21,7 @@ const cvaPlayerSongDetailToggleIcon = cva("", {
   variants: {
     isActive: {
       true: "text-brand",
-      false: "text-zinc-400",
+      false: "text-muted",
     },
   },
 });
@@ -53,13 +53,13 @@ export function PlayerSongDetail() {
   }
 
   return (
-    <div className="text-foreground md:from-surface-elevated md:to-surface flex h-full min-h-0 flex-col md:bg-linear-to-b md:p-6">
+    <div className="text-contrast md:from-solid md:to-surface flex h-full min-h-0 flex-col md:bg-linear-to-b md:p-6">
       <div className="mb-2 flex items-center justify-end md:hidden">
         <IconButton
           type="button"
           onClick={() => setActiveMobileView("list")}
           aria-label="閉じる"
-          className="text-zinc-400"
+          className="text-muted"
         >
           <X className="size-5" />
         </IconButton>
@@ -79,13 +79,13 @@ export function PlayerSongDetail() {
             <Link
               href={`/playlists/${playlistId}`}
               onClick={() => setActiveMobileView("list")}
-              className="text-xs font-semibold text-zinc-400 active:text-zinc-300"
+              className="text-muted active:text-contrast text-xs font-semibold"
             >
               {playlistTitle}
             </Link>
           )}
           <p className="text-xl font-bold">{currentSong.title}</p>
-          <p className="text-sm text-zinc-400">{currentSong.artist}</p>
+          <p className="text-muted text-sm">{currentSong.artist}</p>
         </div>
         <div className="flex w-full flex-col gap-1">
           <input
@@ -97,7 +97,7 @@ export function PlayerSongDetail() {
             aria-label="再生位置"
             className="accent-brand w-full"
           />
-          <div className="flex justify-between text-xs text-zinc-400">
+          <div className="text-muted flex justify-between text-xs">
             <span>{formatDuration(currentTime)}</span>
             <span>{formatDuration(duration)}</span>
           </div>
@@ -120,7 +120,7 @@ export function PlayerSongDetail() {
               type="button"
               onClick={playPrevious}
               aria-label="前の曲"
-              className="text-foreground"
+              className="text-contrast"
             >
               <SkipBack className="size-6" fill="currentColor" />
             </IconButton>
@@ -142,7 +142,7 @@ export function PlayerSongDetail() {
               type="button"
               onClick={playNext}
               aria-label="次の曲"
-              className="text-foreground"
+              className="text-contrast"
             >
               <SkipForward className="size-6" fill="currentColor" />
             </IconButton>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { getEmbedTheme } from "@/features/embed/api";
 import { SERVICE_NAME, SERVICE_THEME_COLOR, cn } from "@/library";
 
 const geistSans = Geist({
@@ -32,21 +33,24 @@ export const viewport: Viewport = {
   themeColor: SERVICE_THEME_COLOR,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = await getEmbedTheme();
+
   return (
     <html
       lang="ja"
+      data-theme={theme}
       className={cn(
         geistSans.variable,
         geistMono.variable,
         "h-full antialiased",
       )}
     >
-      <body className="bg-surface text-foreground flex min-h-full flex-col">
+      <body className="bg-surface text-contrast flex min-h-full flex-col">
         <div className="w-full flex-1">{children}</div>
       </body>
     </html>

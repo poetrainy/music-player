@@ -14,7 +14,7 @@ interface Props {
 const COLLAGE_TILE_COUNT = 4;
 
 const cvaPlaylistThumbnailCollage = cva(
-  "grid shrink-0 grid-cols-2 grid-rows-2 overflow-hidden bg-surface-elevated",
+  "grid shrink-0 grid-cols-2 grid-rows-2 overflow-hidden bg-solid",
   {
     variants: {
       size: {
@@ -50,7 +50,7 @@ export function PlaylistThumbnailCollage({ songs, size }: Props) {
             />
           </div>
         ) : (
-          <div key={`empty-${index}`} className="bg-surface-elevated" />
+          <div key={`empty-${index}`} className="bg-solid" />
         ),
       )}
     </div>

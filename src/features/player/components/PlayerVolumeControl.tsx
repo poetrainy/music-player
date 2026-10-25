@@ -35,18 +35,18 @@ export function PlayerVolumeControl() {
   const VolumeIcon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
 
   return (
-    <div ref={containerRef} className="hidden md:block relative">
+    <div ref={containerRef} className="relative hidden md:block">
       <IconButton
         type="button"
         onClick={handleToggle}
         aria-label="音量"
         aria-expanded={isPopoverOpen}
-        className="text-foreground"
+        className="text-contrast"
       >
         <VolumeIcon className="size-5" />
       </IconButton>
       {isPopoverOpen && (
-        <div className="bg-surface-elevated absolute bottom-full left-1/2 mb-2 w-32 -translate-x-1/2 rounded-lg p-3 shadow-lg shadow-black/40">
+        <div className="bg-solid absolute bottom-full left-1/2 mb-2 w-32 -translate-x-1/2 rounded-lg p-3 shadow-lg shadow-black/40">
           <input
             type="range"
             min={0}

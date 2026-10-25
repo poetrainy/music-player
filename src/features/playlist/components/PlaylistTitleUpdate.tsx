@@ -53,7 +53,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
           onChange={(event) => setValue(event.target.value)}
           disabled={isUpdating}
           autoFocus
-          className="text-foreground bg-surface-elevated w-full rounded-md px-3 py-1 text-center text-2xl font-extrabold tracking-tight outline-none"
+          className="text-contrast bg-solid w-full rounded-md px-3 py-1 text-center text-2xl font-extrabold tracking-tight outline-none"
         />
         <IconButton
           type="submit"
@@ -68,7 +68,7 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
           onClick={handleCancel}
           disabled={isUpdating}
           aria-label="キャンセル"
-          className="text-zinc-400"
+          className="text-muted"
         >
           <X className="size-5" />
         </IconButton>
@@ -78,14 +78,14 @@ export function PlaylistTitleUpdate({ playlistId, title }: Props) {
 
   return (
     <div className="flex h-10 items-center justify-center gap-2">
-      <h1 className="text-foreground text-2xl font-extrabold tracking-tight">
+      <h1 className="text-contrast text-2xl font-extrabold tracking-tight">
         {title}
       </h1>
       <IconButton
         type="button"
         onClick={() => setIsEditing(true)}
         aria-label="プレイリスト名を編集"
-        className="text-zinc-400"
+        className="text-muted"
       >
         <Pencil className="size-4" />
       </IconButton>

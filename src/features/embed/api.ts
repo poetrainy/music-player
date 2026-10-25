@@ -1,9 +1,13 @@
 import { cookies } from "next/headers";
-import { EmbedSession } from "@/features/embed/entity";
+import { EmbedColor, EmbedSession, EmbedTheme } from "@/features/embed/entity";
 import {
+  EMBED_COLOR_COOKIE_NAME,
   EMBED_COOKIE_NAME,
+  EMBED_THEME_COOKIE_NAME,
   decryptEmbedSession,
   isRecord,
+  parseEmbedColor,
+  parseEmbedTheme,
 } from "@/features/embed/library";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -29,6 +33,14 @@ export const getEmbedSession = async (): Promise<EmbedSession | null> => {
   return decryptEmbedSession(token, secret);
 };
 
+export const getEmbedColor = async (): Promise<EmbedColor | null> =>
+  parseEmbedColor((await cookies()).get(EMBED_COLOR_COOKIE_NAME)?.value);
+
+// NOTE: 指定がない場合は通常表示と同じダークテーマで表示する
+export const getEmbedTheme = async (): Promise<EmbedTheme> =>
+  parseEmbedTheme((await cookies()).get(EMBED_THEME_COOKIE_NAME)?.value) ??
+  "dark";
+
 export const getEmbedAccessToken = async (
   refreshToken: string,
 ): Promise<string | null> => {
@@ -42,8 +54,8 @@ export const getEmbedAccessToken = async (
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: process.env.AUTH_GOOGLE_CLIENT_ID ?? "",
-      client_secret: process.env.AUTH_GOOGLE_CLIENT_SECRET ?? "",
+      client_id: process.env.AUTH_GOOGLE_ID ?? "",
+      client_secret: process.env.AUTH_GOOGLE_SECRET ?? "",
       grant_type: "refresh_token",
       refresh_token: refreshToken,
     }),

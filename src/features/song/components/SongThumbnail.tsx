@@ -37,8 +37,8 @@ export function SongThumbnail({
 
   if (hasFailed || !thumbnailUrl) {
     return (
-      <div className="bg-surface-elevated flex size-full items-center justify-center">
-        <Music className="size-1/2 text-zinc-500" />
+      <div className="bg-solid flex size-full items-center justify-center">
+        <Music className="text-muted size-1/2" />
       </div>
     );
   }

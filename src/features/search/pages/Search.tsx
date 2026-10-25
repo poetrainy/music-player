@@ -24,8 +24,8 @@ const cvaSearchComponentSongListItem = cva(
   {
     variants: {
       isActive: {
-        true: "bg-surface-elevated",
-        false: "hover:bg-surface-elevated active:bg-surface-elevated",
+        true: "bg-solid",
+        false: "hover:bg-solid active:bg-solid",
       },
     },
   },
@@ -120,7 +120,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
           defaultValue={query}
           placeholder="曲やアーティストを検索"
           aria-label="曲やアーティストを検索"
-          className="bg-surface-elevated text-foreground w-full rounded-full px-4 py-2 text-sm outline-none"
+          className="bg-solid text-contrast w-full rounded-full px-4 py-2 text-sm outline-none"
         />
         <button
           type="submit"
@@ -143,7 +143,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
             setSessionPlaylistItemIdsBySongId({});
           }}
           aria-label="プレイリストを選択"
-          className="bg-surface-elevated text-foreground w-full rounded-md px-3 py-2 text-sm"
+          className="bg-solid text-contrast w-full rounded-md px-3 py-2 text-sm"
         >
           {playlists.map(({ id, title }) => (
             <option key={id} value={id}>
@@ -153,7 +153,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
         </select>
       )}
       {!songs.length ? (
-        <p className="text-sm text-zinc-400">
+        <p className="text-muted text-sm">
           {query ? "検索結果がありません。" : "曲を検索してください。"}
         </p>
       ) : (
@@ -188,7 +188,7 @@ export function SearchComponent({ playlists, query, songs }: Props) {
                         ? "プレイリストから削除"
                         : "プレイリストに追加"
                     }
-                    className="text-brand active:text-brand/70 flex size-8 shrink-0 items-center justify-center text-sm font-semibold disabled:text-zinc-500"
+                    className="text-brand active:text-brand/70 disabled:text-muted flex size-8 shrink-0 items-center justify-center text-sm font-semibold"
                   >
                     {pendingSongId === song.id ? (
                       <Loader2 className="size-5 animate-spin" />

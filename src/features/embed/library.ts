@@ -1,7 +1,15 @@
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { EmbedSession } from "@/features/embed/entity";
+import colors from "tailwindcss/colors";
+import {
+  EMBED_THEMES,
+  EmbedColor,
+  EmbedSession,
+  EmbedTheme,
+} from "@/features/embed/entity";
 
 export const EMBED_COOKIE_NAME = "music-player-embed";
+export const EMBED_COLOR_COOKIE_NAME = "music-player-embed-color";
+export const EMBED_THEME_COOKIE_NAME = "music-player-embed-theme";
 export const EMBED_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 // NOTE: 別サイトの iframe 内でも Cookie を送れるよう SameSite=None にし、埋め込み元ごとに分離して保存されるよう Partitioned を付ける
@@ -13,6 +21,16 @@ export const EMBED_COOKIE_OPTIONS = {
   partitioned: true,
   path: "/",
   maxAge: EMBED_SESSION_MAX_AGE_SECONDS,
+} as const;
+
+export const EMBED_COLOR_COOKIE_OPTIONS = {
+  ...EMBED_COOKIE_OPTIONS,
+  name: EMBED_COLOR_COOKIE_NAME,
+} as const;
+
+export const EMBED_THEME_COOKIE_OPTIONS = {
+  ...EMBED_COOKIE_OPTIONS,
+  name: EMBED_THEME_COOKIE_NAME,
 } as const;
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -62,3 +80,17 @@ export const decryptEmbedSession = async (
     return null;
   }
 };
+
+const isEmbedColor = (value: string): value is EmbedColor =>
+  Object.entries(colors).some(
+    ([name, palette]) => name === value && typeof palette !== "string",
+  );
+
+// NOTE: 値は CSS にそのまま埋め込むため、Tailwind のカラーパレットに存在する色名以外は受け付けない
+export const parseEmbedColor = (
+  value: string | null | undefined,
+): EmbedColor | null => (value && isEmbedColor(value) ? value : null);
+
+export const parseEmbedTheme = (
+  value: string | null | undefined,
+): EmbedTheme | null => EMBED_THEMES.find((theme) => theme === value) ?? null;

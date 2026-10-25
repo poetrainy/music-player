@@ -6,7 +6,7 @@ import { PlayerSongDetail } from "@/features/player/components/PlayerSongDetail"
 import { usePlayer } from "@/features/player/hook";
 
 const cvaPlayerSongDetailPanelContainer = cva(
-  "md:bg-surface-elevated hidden w-full overflow-hidden md:sticky md:top-28 md:max-w-sm md:shrink-0 md:rounded-xl",
+  "md:bg-solid hidden w-full overflow-hidden md:sticky md:top-28 md:max-w-sm md:shrink-0 md:rounded-xl",
   {
     variants: {
       isActive: {
