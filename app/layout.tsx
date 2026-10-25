@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getEmbedTheme } from "@/features/embed/api";
+import { EmbedThemeReceiver } from "@/features/embed/components/EmbedThemeReceiver";
 import { SERVICE_NAME, SERVICE_THEME_COLOR, cn } from "@/library";
 
 const geistSans = Geist({
@@ -52,6 +53,7 @@ export default async function RootLayout({
     >
       <body className="bg-surface text-contrast flex min-h-full flex-col">
         <div className="w-full flex-1">{children}</div>
+        <EmbedThemeReceiver />
       </body>
     </html>
   );

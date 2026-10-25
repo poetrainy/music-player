@@ -2,6 +2,7 @@ import { EncryptJWT, jwtDecrypt } from "jose";
 import colors from "tailwindcss/colors";
 import {
   EMBED_THEMES,
+  EMBED_THEME_MESSAGE_TYPE,
   EmbedColor,
   EmbedSession,
   EmbedTheme,
@@ -100,3 +101,11 @@ export const parseEmbedColor = (
 export const parseEmbedTheme = (
   value: string | null | undefined,
 ): EmbedTheme | null => EMBED_THEMES.find((theme) => theme === value) ?? null;
+
+// NOTE: message イベントは任意の値を受け取りうるため、種類とテーマの値を確かめてから使う
+export const parseEmbedThemeMessage = (data: unknown): EmbedTheme | null =>
+  isRecord(data) &&
+  data.type === EMBED_THEME_MESSAGE_TYPE &&
+  typeof data.theme === "string"
+    ? parseEmbedTheme(data.theme)
+    : null;

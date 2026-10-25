@@ -22,3 +22,6 @@ export type EmbedColor = {
 
 export const EMBED_THEMES = ["dark", "light"] as const;
 export type EmbedTheme = (typeof EMBED_THEMES)[number];
+
+// NOTE: 埋め込み元がテーマを切り替えるときに送るメッセージの種類。埋め込み元と同じ値を使う
+export const EMBED_THEME_MESSAGE_TYPE = "music-player:theme";
