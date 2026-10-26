@@ -25,3 +25,11 @@ export type EmbedTheme = (typeof EMBED_THEMES)[number];
 
 // NOTE: 埋め込み元がテーマを切り替えるときに送るメッセージの種類。埋め込み元と同じ値を使う
 export const EMBED_THEME_MESSAGE_TYPE = "music-player:theme";
+
+// NOTE: 同じ再生先が別の場所で開かれたかどうかを埋め込み元に知らせるメッセージの種類。埋め込み元と同じ値を使う
+export const EMBED_REPLACED_MESSAGE_TYPE = "music-player:replaced";
+
+export interface EmbedReplacedMessage {
+  type: typeof EMBED_REPLACED_MESSAGE_TYPE;
+  isReplaced: boolean;
+}

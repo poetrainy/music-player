@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { Pause } from "lucide-react";
+import { EmbedReplacedNotifier } from "@/features/embed/components/EmbedReplacedNotifier";
 import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { PlayerSongInfo } from "@/features/player/components/PlayerSongInfo";
 import { PlayerSongThumbnail } from "@/features/player/components/PlayerSongThumbnail";
@@ -32,6 +33,7 @@ export function PlayerComponent({
     >
       <PlayerNowPlaying remotePlaybackDeviceId={remotePlaybackDeviceId} />
       <PlayerPlaybackRestore />
+      <EmbedReplacedNotifier />
     </PlayerProvider>
   );
 }
