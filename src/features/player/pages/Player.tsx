@@ -68,6 +68,7 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
             <PlayerSongInfo
               song={currentSong}
               playlistTitle={playlistId ? playlistTitle : null}
+              isFullTextVisible
             />
             <div className="flex flex-col gap-1">
               <progress
