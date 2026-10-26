@@ -6,8 +6,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import {
   createPlaybackController,
@@ -19,9 +21,13 @@ import {
   DEFAULT_VOLUME,
   getAdjacentSong,
   loadPlaybackState,
+  loadRawPlaybackState,
   loadVolume,
+  PLAYBACK_STATE_STORAGE_KEY,
+  parsePlaybackState,
   savePlaybackState,
   saveVolume,
+  StoredPlaybackState,
 } from "@/features/player/library";
 import { Song } from "@/features/song/entity";
 import { SERVICE_NAME } from "@/library";
@@ -654,4 +660,31 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     toggleShuffle,
     volume,
   };
+};
+
+const subscribeStoredPlaybackState = (onChange: () => void): (() => void) => {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key !== PLAYBACK_STATE_STORAGE_KEY) {
+      return;
+    }
+
+    onChange();
+  };
+
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+  };
+};
+
+// NOTE: storage イベントは保存したタブ自身には届かないため、別タブで再生中の状態を表示する用途に限って使う
+export const useStoredPlaybackState = (): StoredPlaybackState | null => {
+  const raw = useSyncExternalStore(
+    subscribeStoredPlaybackState,
+    loadRawPlaybackState,
+    () => null,
+  );
+
+  return useMemo(() => parsePlaybackState(raw), [raw]);
 };

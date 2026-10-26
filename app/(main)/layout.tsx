@@ -6,8 +6,6 @@ import {
   getEmbedSession,
 } from "@/features/embed/api";
 import { EmbedColorStyle } from "@/features/embed/components/EmbedColorStyle";
-import { getCurrentUser } from "@/features/user/api";
-import { MainLayout } from "@/layouts/MainLayout";
 
 export default async function Layout({
   children,
@@ -23,7 +21,6 @@ export default async function Layout({
     redirect("/signin");
   }
 
-  const user = await getCurrentUser();
   const embedBaseColor = await getEmbedBaseColor();
   const embedBrandColor = await getEmbedBrandColor();
 
@@ -33,9 +30,7 @@ export default async function Layout({
         baseColor={embedBaseColor}
         brandColor={embedBrandColor}
       />
-      <MainLayout user={user} isEmbedded={isEmbedded}>
-        {children}
-      </MainLayout>
+      {children}
     </>
   );
 }

@@ -20,7 +20,7 @@ export const loadVolume = (): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const PLAYBACK_STATE_STORAGE_KEY = "player-playback-state";
+export const PLAYBACK_STATE_STORAGE_KEY = "player-playback-state";
 
 export interface StoredPlaybackState {
   currentTime: number;
@@ -77,9 +77,12 @@ const isStoredPlaybackState = (
   );
 };
 
-export const loadPlaybackState = (): StoredPlaybackState | null => {
-  const raw = localStorage.getItem(PLAYBACK_STATE_STORAGE_KEY);
+export const loadRawPlaybackState = (): string | null =>
+  localStorage.getItem(PLAYBACK_STATE_STORAGE_KEY);
 
+export const parsePlaybackState = (
+  raw: string | null,
+): StoredPlaybackState | null => {
   if (!raw) {
     return null;
   }
@@ -88,6 +91,9 @@ export const loadPlaybackState = (): StoredPlaybackState | null => {
 
   return isStoredPlaybackState(parsed) ? parsed : null;
 };
+
+export const loadPlaybackState = (): StoredPlaybackState | null =>
+  parsePlaybackState(loadRawPlaybackState());
 
 export const getAdjacentSong = (
   songs: Song[],
