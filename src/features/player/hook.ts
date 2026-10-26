@@ -85,7 +85,10 @@ export const usePlayer = (): PlayerContextValue => {
   return context;
 };
 
-export const usePlayerController = (userEmail: string): PlayerContextValue => {
+export const usePlayerController = (
+  userEmail: string,
+  isPlaybackStatePersistent: boolean,
+): PlayerContextValue => {
   const playerRef = useRef<PlaybackController | null>(null);
   const songsRef = useRef<Song[]>([]);
   const repeatModeRef = useRef<RepeatMode>("off");
@@ -553,7 +556,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   );
 
   const restorePlayback = useCallback(() => {
-    if (currentSongRef.current || !userEmail) {
+    if (currentSongRef.current || !userEmail || !isPlaybackStatePersistent) {
       return;
     }
 
@@ -571,7 +574,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       stored.currentTime,
       false,
     );
-  }, [loadPaused, userEmail]);
+  }, [isPlaybackStatePersistent, loadPaused, userEmail]);
 
   const restoreVolume = useCallback(() => {
     const stored = loadVolume();
@@ -615,7 +618,12 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
   );
 
   useEffect(() => {
-    if (!currentSong || !playlistId || !userEmail) {
+    if (
+      !currentSong ||
+      !playlistId ||
+      !userEmail ||
+      !isPlaybackStatePersistent
+    ) {
       return;
     }
 
@@ -627,7 +635,15 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
       songs,
       userEmail,
     });
-  }, [currentSong, currentTime, playlistId, playlistTitle, songs, userEmail]);
+  }, [
+    currentSong,
+    currentTime,
+    isPlaybackStatePersistent,
+    playlistId,
+    playlistTitle,
+    songs,
+    userEmail,
+  ]);
 
   return {
     activeMobileView,

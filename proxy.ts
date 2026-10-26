@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  EMBED_BASE_COLOR_COOKIE_NAME,
-  EMBED_BASE_COLOR_COOKIE_OPTIONS,
-  EMBED_BRAND_COLOR_COOKIE_NAME,
-  EMBED_BRAND_COLOR_COOKIE_OPTIONS,
   EMBED_COOKIE_NAME,
   EMBED_COOKIE_OPTIONS,
-  EMBED_DEVICE_COOKIE_NAME,
-  EMBED_DEVICE_COOKIE_OPTIONS,
   EMBED_SESSION_MAX_AGE_SECONDS,
   EMBED_THEME_COOKIE_NAME,
   EMBED_THEME_COOKIE_OPTIONS,
   decryptEmbedSession,
   encryptEmbedSession,
-  parseEmbedColor,
   parseEmbedTheme,
 } from "@/features/embed/library";
 import {
@@ -21,6 +14,8 @@ import {
   REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_OPTIONS,
   parseRemotePlaybackDeviceId,
 } from "@/features/remote-playback/libraries/device";
+
+const PLAYER_PATHNAME = "/player";
 
 // NOTE: 共有された URL を開くだけで再生先を切り替えられるよう、クエリの指定を Cookie に移し、クエリのない URL に戻す
 const redirectWithRemotePlaybackTarget = (
@@ -56,7 +51,8 @@ export const proxy = async (request: NextRequest) => {
     REMOTE_PLAYBACK_DEVICE_QUERY_NAME,
   );
 
-  if (deviceQuery !== null) {
+  // NOTE: プレーヤー画面のクエリは自分が再生するデバイスの指定で、操作側の再生先の指定ではないため切り替えない
+  if (deviceQuery !== null && request.nextUrl.pathname !== PLAYER_PATHNAME) {
     return redirectWithRemotePlaybackTarget(request, deviceQuery);
   }
 
@@ -83,41 +79,12 @@ export const proxy = async (request: NextRequest) => {
     ),
   });
 
-  const baseColor = parseEmbedColor(
-    request.cookies.get(EMBED_BASE_COLOR_COOKIE_NAME)?.value,
-  );
-  const brandColor = parseEmbedColor(
-    request.cookies.get(EMBED_BRAND_COLOR_COOKIE_NAME)?.value,
-  );
-
   const theme = parseEmbedTheme(
     request.cookies.get(EMBED_THEME_COOKIE_NAME)?.value,
   );
 
-  if (baseColor) {
-    response.cookies.set({
-      ...EMBED_BASE_COLOR_COOKIE_OPTIONS,
-      value: baseColor,
-    });
-  }
-
-  if (brandColor) {
-    response.cookies.set({
-      ...EMBED_BRAND_COLOR_COOKIE_OPTIONS,
-      value: brandColor,
-    });
-  }
-
   if (theme) {
     response.cookies.set({ ...EMBED_THEME_COOKIE_OPTIONS, value: theme });
-  }
-
-  const deviceId = parseRemotePlaybackDeviceId(
-    request.cookies.get(EMBED_DEVICE_COOKIE_NAME)?.value,
-  );
-
-  if (deviceId) {
-    response.cookies.set({ ...EMBED_DEVICE_COOKIE_OPTIONS, value: deviceId });
   }
 
   return response;

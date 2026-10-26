@@ -1,4 +1,4 @@
-import { getEmbedDeviceId, getEmbedSession } from "@/features/embed/api";
+import { getEmbedSession } from "@/features/embed/api";
 import { createRemotePlaybackChannelName } from "@/features/remote-playback/libraries/device";
 import { getCurrentUser } from "@/features/user/api";
 import { MainLayout } from "@/layouts/MainLayout";
@@ -13,14 +13,12 @@ export default async function Layout({
   const remotePlaybackChannelName = await createRemotePlaybackChannelName(
     user.email,
   );
-  const remotePlaybackDeviceId = await getEmbedDeviceId();
 
   return (
     <MainLayout
       user={user}
       hasEmbedSession={hasEmbedSession}
       remotePlaybackChannelName={remotePlaybackChannelName}
-      remotePlaybackDeviceId={remotePlaybackDeviceId}
     >
       {children}
     </MainLayout>

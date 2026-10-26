@@ -16,6 +16,7 @@ interface Props {
   userEmail: string;
   remotePlaybackChannelName: string;
   remotePlaybackDeviceId: string | null;
+  isPlaybackStatePersistent: boolean;
 }
 
 export function PlayerProvider({
@@ -23,8 +24,9 @@ export function PlayerProvider({
   userEmail,
   remotePlaybackChannelName,
   remotePlaybackDeviceId,
+  isPlaybackStatePersistent,
 }: Props) {
-  const player = usePlayerController(userEmail);
+  const player = usePlayerController(userEmail, isPlaybackStatePersistent);
   const { connectedPlayer, targetDeviceId, selectTargetDevice } =
     useRemotePlayback(
       player,

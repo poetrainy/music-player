@@ -15,7 +15,6 @@ interface Props {
   user: User;
   hasEmbedSession: boolean;
   remotePlaybackChannelName: string;
-  remotePlaybackDeviceId: string | null;
 }
 
 export function MainLayout({
@@ -23,7 +22,6 @@ export function MainLayout({
   user,
   hasEmbedSession,
   remotePlaybackChannelName,
-  remotePlaybackDeviceId,
 }: Props) {
   const isEmbedded = useIsEmbedded(hasEmbedSession);
 
@@ -31,8 +29,9 @@ export function MainLayout({
     <PlayerProvider
       userEmail={user.email}
       remotePlaybackChannelName={remotePlaybackChannelName}
-      // NOTE: 直接開いた画面は操作側として使うため、埋め込み時の再生デバイスの指定を引き継がない
-      remotePlaybackDeviceId={isEmbedded ? remotePlaybackDeviceId : null}
+      // NOTE: 再生するデバイスはプレーヤー画面だけが担い、サイト本体の画面は iframe 内で開かれても操作側として振る舞う
+      remotePlaybackDeviceId={null}
+      isPlaybackStatePersistent
     >
       <Header user={user} isEmbedded={isEmbedded} />
       <main className="mx-auto w-full max-w-300 px-4 pt-6 pb-20">

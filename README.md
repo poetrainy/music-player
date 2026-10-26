@@ -33,7 +33,7 @@ EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み
 ABLY_API_KEY=                 # リモート再生用。Ably のダッシュボードで発行した API キー
 ```
 
-Google Cloud Console の OAuth クライアントには、認可済みリダイレクト URI として `http://localhost:3000/api/auth/callback/google`（本番環境では `https://<ドメイン>/api/auth/callback/google`）を登録してください。また、YouTube Data API v3 を有効化する必要があります。
+Google Cloud Console の OAuth クライアントには、認可済みリダイレクト URI として `http://localhost:3999/api/auth/callback/google`（本番環境では `https://<ドメイン>/api/auth/callback/google`）を登録してください。また、YouTube Data API v3 を有効化する必要があります。
 
 ### 埋め込み表示
 
@@ -72,11 +72,13 @@ Google Cloud Console の OAuth クライアントには、認可済みリダイ�
 
 共有鍵を変えると既存の埋め込み用 Cookie は無効になりますが、埋め込み元が新しいチケットで iframe を開き直せば表示が戻ります。
 
-埋め込み表示は、操作 UI のないプレーヤー画面（`/player`）を開きます。
+埋め込み表示は、操作 UI のないプレーヤー画面（`/player`）を開きます。`device`・`base`・`brand` は Cookie に保存せず、`/player` のクエリとして引き継ぎます（`theme` のみ Cookie に保存します）。`device` がない、または登録されていないデバイスの場合、`/player` は何も表示しません。サイト本体から直接 `/player` を開いた場合も同様です。
+
+プレーヤー画面は再生状態を保存・復元しないため、サイト本体の再生とは独立しています。カードを押すと、新しいタブで `/?device=<id>` を開き、再生先がそのデバイスになったサイト本体の画面から曲を選べます。
 
 ### リモート再生
 
-`device` パラメータに `src/features/remote-playback/devices.json` の `id`（例: `living`）を付けて埋め込むと、その埋め込み表示が再生先のデバイスになります（例: `?ticket=<チケット>&device=living`）。スマートフォンなど通常の画面では、ヘッダーの再生先ボタンからデバイスを選ぶと、再生・一時停止・曲送り・シーク・音量・シャッフル・リピートの操作がそのデバイスに送られ、画面にはそのデバイスで再生中の曲が表示されます。再生中にデバイスを切り替えると、手元の再生を止めて同じ位置から再生先に引き継ぎます。
+`device` パラメータに `src/features/remote-playback/devices.json` の `id`（例: `room`）を付けて埋め込むと、その埋め込み表示が再生先のデバイスになります（例: `?ticket=<チケット>&device=room`）。再生先になるのは埋め込みのプレーヤー画面だけで、サイト本体の画面は iframe 内で開かれても再生先になりません。スマートフォンなど通常の画面では、ヘッダーの再生先ボタンからデバイスを選ぶと、再生・一時停止・曲送り・シーク・音量・シャッフル・リピートの操作がそのデバイスに送られ、画面にはそのデバイスで再生中の曲が表示されます。再生中にデバイスを切り替えると、手元の再生を止めて同じ位置から再生先に引き継ぎます。
 
 - 命令は Ably でリアルタイムに届けます。オフラインのデバイス宛ての命令は保存せず、破棄されます
 - 操作できない端末で再生するため、Chromium などのブラウザは `--autoplay-policy=no-user-gesture-required` を付けて起動してください。付けない場合、一度も操作していないページでは音の出る再生をブラウザが止めます
@@ -88,7 +90,7 @@ bun install
 bun dev
 ```
 
-[http://localhost:3000](http://localhost:3000) で確認できます。
+[http://localhost:3999](http://localhost:3999) で確認できます。
 
 ### その他のコマンド
 

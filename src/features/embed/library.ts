@@ -7,12 +7,13 @@ import {
   EmbedSession,
   EmbedTheme,
 } from "@/features/embed/entity";
+import { REMOTE_PLAYBACK_DEVICE_QUERY_NAME } from "@/features/remote-playback/libraries/device";
 
 export const EMBED_COOKIE_NAME = "music-player-embed";
-export const EMBED_BASE_COLOR_COOKIE_NAME = "music-player-embed-base-color";
-export const EMBED_BRAND_COLOR_COOKIE_NAME = "music-player-embed-brand-color";
 export const EMBED_THEME_COOKIE_NAME = "music-player-embed-theme";
-export const EMBED_DEVICE_COOKIE_NAME = "music-player-embed-device";
+export const EMBED_BASE_COLOR_QUERY_NAME = "base";
+export const EMBED_BRAND_COLOR_QUERY_NAME = "brand";
+export const EMBED_THEME_QUERY_NAME = "theme";
 export const EMBED_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 // NOTE: 別サイトの iframe 内でも Cookie を送れるよう SameSite=None にし、埋め込み元ごとに分離して保存されるよう Partitioned を付ける
@@ -26,24 +27,9 @@ export const EMBED_COOKIE_OPTIONS = {
   maxAge: EMBED_SESSION_MAX_AGE_SECONDS,
 } as const;
 
-export const EMBED_BASE_COLOR_COOKIE_OPTIONS = {
-  ...EMBED_COOKIE_OPTIONS,
-  name: EMBED_BASE_COLOR_COOKIE_NAME,
-} as const;
-
-export const EMBED_BRAND_COLOR_COOKIE_OPTIONS = {
-  ...EMBED_COOKIE_OPTIONS,
-  name: EMBED_BRAND_COLOR_COOKIE_NAME,
-} as const;
-
 export const EMBED_THEME_COOKIE_OPTIONS = {
   ...EMBED_COOKIE_OPTIONS,
   name: EMBED_THEME_COOKIE_NAME,
-} as const;
-
-export const EMBED_DEVICE_COOKIE_OPTIONS = {
-  ...EMBED_COOKIE_OPTIONS,
-  name: EMBED_DEVICE_COOKIE_NAME,
 } as const;
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -115,3 +101,28 @@ export const parseEmbedThemeMessage = (data: unknown): EmbedTheme | null =>
   typeof data.theme === "string"
     ? parseEmbedTheme(data.theme)
     : null;
+
+// NOTE: 再生先のデバイスと色は iframe の表示ごとに決まり、サイト本体の表示に残さないよう、Cookie ではなくプレーヤー画面のクエリで渡す
+export const buildEmbedPlayerUrl = (
+  requestUrl: string,
+  deviceId: string | null,
+  baseColor: EmbedColor | null,
+  brandColor: EmbedColor | null,
+): URL => {
+  const url = new URL("/player", requestUrl);
+
+  // NOTE: デバイスの指定がない場合、プレーヤー画面は何も表示しない
+  if (deviceId) {
+    url.searchParams.set(REMOTE_PLAYBACK_DEVICE_QUERY_NAME, deviceId);
+  }
+
+  if (baseColor) {
+    url.searchParams.set(EMBED_BASE_COLOR_QUERY_NAME, baseColor);
+  }
+
+  if (brandColor) {
+    url.searchParams.set(EMBED_BRAND_COLOR_QUERY_NAME, brandColor);
+  }
+
+  return url;
+};

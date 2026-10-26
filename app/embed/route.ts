@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  EMBED_BASE_COLOR_COOKIE_OPTIONS,
-  EMBED_BRAND_COLOR_COOKIE_OPTIONS,
+  EMBED_BASE_COLOR_QUERY_NAME,
+  EMBED_BRAND_COLOR_QUERY_NAME,
   EMBED_COOKIE_OPTIONS,
-  EMBED_DEVICE_COOKIE_OPTIONS,
   EMBED_SESSION_MAX_AGE_SECONDS,
   EMBED_THEME_COOKIE_OPTIONS,
+  EMBED_THEME_QUERY_NAME,
+  buildEmbedPlayerUrl,
   decryptEmbedSession,
   encryptEmbedSession,
   parseEmbedColor,
   parseEmbedTheme,
 } from "@/features/embed/library";
-import { parseRemotePlaybackDeviceId } from "@/features/remote-playback/libraries/device";
+import {
+  REMOTE_PLAYBACK_DEVICE_QUERY_NAME,
+  parseRemotePlaybackDeviceId,
+} from "@/features/remote-playback/libraries/device";
 
 export const GET = async (request: NextRequest) => {
   const { EMBED_SECRET: secret } = process.env;
-  const ticket = request.nextUrl.searchParams.get("ticket");
+  const { searchParams } = request.nextUrl;
+  const ticket = searchParams.get("ticket");
   const session =
     secret && ticket ? await decryptEmbedSession(ticket, secret) : null;
 
@@ -24,7 +29,16 @@ export const GET = async (request: NextRequest) => {
   }
 
   // NOTE: 埋め込みは常時表示する端末での再生画面として使うため、操作 UI のないプレーヤー画面を開く
-  const response = NextResponse.redirect(new URL("/player", request.url));
+  const response = NextResponse.redirect(
+    buildEmbedPlayerUrl(
+      request.url,
+      parseRemotePlaybackDeviceId(
+        searchParams.get(REMOTE_PLAYBACK_DEVICE_QUERY_NAME),
+      ),
+      parseEmbedColor(searchParams.get(EMBED_BASE_COLOR_QUERY_NAME)),
+      parseEmbedColor(searchParams.get(EMBED_BRAND_COLOR_QUERY_NAME)),
+    ),
+  );
 
   response.cookies.set({
     ...EMBED_COOKIE_OPTIONS,
@@ -35,42 +49,13 @@ export const GET = async (request: NextRequest) => {
     ),
   });
 
-  const baseColor = parseEmbedColor(request.nextUrl.searchParams.get("base"));
-  const brandColor = parseEmbedColor(request.nextUrl.searchParams.get("brand"));
-  const theme = parseEmbedTheme(request.nextUrl.searchParams.get("theme"));
-  const deviceId = parseRemotePlaybackDeviceId(
-    request.nextUrl.searchParams.get("device"),
-  );
+  const theme = parseEmbedTheme(searchParams.get(EMBED_THEME_QUERY_NAME));
 
-  // NOTE: 指定がない・不正な値の場合は以前の指定を残さず、既定の表示に戻す
-  if (baseColor) {
-    response.cookies.set({
-      ...EMBED_BASE_COLOR_COOKIE_OPTIONS,
-      value: baseColor,
-    });
-  } else {
-    response.cookies.delete(EMBED_BASE_COLOR_COOKIE_OPTIONS);
-  }
-
-  if (brandColor) {
-    response.cookies.set({
-      ...EMBED_BRAND_COLOR_COOKIE_OPTIONS,
-      value: brandColor,
-    });
-  } else {
-    response.cookies.delete(EMBED_BRAND_COLOR_COOKIE_OPTIONS);
-  }
-
+  // NOTE: テーマはルートレイアウトで描画前に決めるためクエリでは渡せず、Cookie に残す。指定がない・不正な値の場合は以前の指定を残さず、既定の表示に戻す
   if (theme) {
     response.cookies.set({ ...EMBED_THEME_COOKIE_OPTIONS, value: theme });
   } else {
     response.cookies.delete(EMBED_THEME_COOKIE_OPTIONS);
-  }
-
-  if (deviceId) {
-    response.cookies.set({ ...EMBED_DEVICE_COOKIE_OPTIONS, value: deviceId });
-  } else {
-    response.cookies.delete(EMBED_DEVICE_COOKIE_OPTIONS);
   }
 
   return response;
