@@ -100,7 +100,7 @@ function PlayerTopLink({ children, deviceId }: PlayerTopLinkProps) {
       href={buildRemotePlaybackTargetHref("/", deviceId)}
       target="_blank"
       rel="noopener noreferrer"
-      className="block h-full rounded-xl"
+      className="block h-full rounded-xl focus-visible:-outline-offset-2"
     >
       {children}
       <span className="sr-only">ミュージックプレーヤーを新しいタブで開く</span>
