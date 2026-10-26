@@ -27,16 +27,26 @@ export function PlayerProvider({
   isPlaybackStatePersistent,
 }: Props) {
   const player = usePlayerController(userEmail, isPlaybackStatePersistent);
-  const { connectedPlayer, targetDeviceId, selectTargetDevice } =
-    useRemotePlayback(
-      player,
-      remotePlaybackChannelName,
-      remotePlaybackDeviceId,
-    );
+  const {
+    connectedPlayer,
+    targetDeviceId,
+    selectTargetDevice,
+    onlineDeviceIds,
+    isReplacedDevice,
+  } = useRemotePlayback(
+    player,
+    remotePlaybackChannelName,
+    remotePlaybackDeviceId,
+  );
 
   const remotePlayback = useMemo(
-    () => ({ targetDeviceId, selectTargetDevice }),
-    [selectTargetDevice, targetDeviceId],
+    () => ({
+      targetDeviceId,
+      selectTargetDevice,
+      onlineDeviceIds,
+      isReplacedDevice,
+    }),
+    [isReplacedDevice, onlineDeviceIds, selectTargetDevice, targetDeviceId],
   );
 
   return (

@@ -4,6 +4,7 @@ import {
   REMOTE_PLAYBACK_SIMPLE_COMMAND_TYPES,
   RemotePlaybackCommand,
   RemotePlaybackCommandMessage,
+  RemotePlaybackPresenceData,
   RemotePlaybackSimpleCommandType,
   RemotePlaybackState,
   RemotePlaybackStateMessage,
@@ -125,3 +126,12 @@ export const parseRemotePlaybackStateMessage = (
 
   return state && { deviceId: value.deviceId, state };
 };
+
+export const parseRemotePlaybackPresenceData = (
+  value: unknown,
+): RemotePlaybackPresenceData | null =>
+  isRecord(value) &&
+  typeof value.deviceId === "string" &&
+  isNumber(value.enteredAt)
+    ? { deviceId: value.deviceId, enteredAt: value.enteredAt }
+    : null;

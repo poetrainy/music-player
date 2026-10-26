@@ -14,7 +14,9 @@ export const GET = async () => {
 
   const channelName = await createRemotePlaybackChannelName(email);
   const tokenRequest = await new Rest({ key }).auth.createTokenRequest({
-    capability: { [channelName]: ["publish", "subscribe"] },
+    // NOTE: presence で名乗るには clientId が必要なため、メールアドレスを読み取れないチャンネル名をそのまま使う
+    clientId: channelName,
+    capability: { [channelName]: ["publish", "subscribe", "presence"] },
   });
 
   return NextResponse.json(tokenRequest);

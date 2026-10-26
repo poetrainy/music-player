@@ -70,3 +70,14 @@ export interface RemotePlaybackStateMessage {
   deviceId: string;
   state: RemotePlaybackState;
 }
+
+export interface RemotePlaybackPresenceData {
+  deviceId: string;
+  enteredAt: number;
+}
+
+export interface RemotePlaybackDeviceInstance {
+  deviceId: string;
+  enteredAt: number;
+  connectionId: string;
+}

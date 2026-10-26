@@ -19,16 +19,20 @@ import {
   REMOTE_PLAYBACK_TOKEN_PATH,
   RemotePlaybackCommand,
   RemotePlaybackCommandMessage,
+  RemotePlaybackDeviceInstance,
+  RemotePlaybackPresenceData,
   RemotePlaybackState,
   RemotePlaybackStateMessage,
 } from "@/features/remote-playback/entity";
 import {
+  getActiveRemotePlaybackDeviceInstances,
   loadRemotePlaybackTargetDeviceId,
   saveRemotePlaybackTargetDeviceId,
   subscribeRemotePlaybackTargetDeviceId,
 } from "@/features/remote-playback/libraries/device";
 import {
   parseRemotePlaybackCommandMessage,
+  parseRemotePlaybackPresenceData,
   parseRemotePlaybackStateMessage,
 } from "@/features/remote-playback/libraries/message";
 import { Song } from "@/features/song/entity";
@@ -42,6 +46,8 @@ const CURRENT_TIME_TICK_MILLISECONDS = 500;
 interface RemotePlaybackContextValue {
   targetDeviceId: string | null;
   selectTargetDevice: (deviceId: string | null) => void;
+  onlineDeviceIds: string[];
+  isReplacedDevice: boolean;
 }
 
 export const RemotePlaybackContext =
@@ -89,6 +95,7 @@ const fetchPlaylistSongs = async (
 
 const useRemotePlaybackChannel = (
   channelName: string,
+  deviceId: string | null,
   onMessage: (message: InboundMessage) => void,
 ) => {
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -96,6 +103,10 @@ const useRemotePlaybackChannel = (
   const [subscribedChannelName, setSubscribedChannelName] = useState<
     string | null
   >(null);
+  const [connectionId, setConnectionId] = useState<string | null>(null);
+  const [deviceInstances, setDeviceInstances] = useState<
+    RemotePlaybackDeviceInstance[]
+  >([]);
 
   useEffect(() => {
     onMessageRef.current = onMessage;
@@ -105,17 +116,50 @@ const useRemotePlaybackChannel = (
     const client = new Realtime({ authUrl: REMOTE_PLAYBACK_TOKEN_PATH });
     const channel = client.channels.get(channelName);
 
+    const syncDeviceInstances = () => {
+      void channel.presence
+        .get()
+        .then((members) =>
+          setDeviceInstances(
+            members.flatMap(({ connectionId: memberConnectionId, data }) => {
+              const presenceData = parseRemotePlaybackPresenceData(data);
+
+              return presenceData
+                ? [{ ...presenceData, connectionId: memberConnectionId }]
+                : [];
+            }),
+          ),
+        )
+        .catch(() => {});
+    };
+
     channelRef.current = channel;
+    client.connection.on("connected", () => {
+      setConnectionId(client.connection.id ?? null);
+    });
     void channel
       .subscribe((message) => onMessageRef.current(message))
       .then(() => setSubscribedChannelName(channelName))
       .catch(() => {});
+    void channel.presence
+      .subscribe(syncDeviceInstances)
+      .then(syncDeviceInstances)
+      .catch(() => {});
+
+    if (deviceId) {
+      const presenceData: RemotePlaybackPresenceData = {
+        deviceId,
+        enteredAt: Date.now(),
+      };
+
+      void channel.presence.enter(presenceData).catch(() => {});
+    }
 
     return () => {
       channelRef.current = null;
       client.close();
     };
-  }, [channelName]);
+  }, [channelName, deviceId]);
 
   // NOTE: 接続中に送ったメッセージは Ably が接続後に送るため、接続を待たずに送る
   const publish = useCallback(
@@ -128,7 +172,12 @@ const useRemotePlaybackChannel = (
     [],
   );
 
-  return { publish, isSubscribed: subscribedChannelName === channelName };
+  return {
+    publish,
+    isSubscribed: subscribedChannelName === channelName,
+    connectionId,
+    deviceInstances,
+  };
 };
 
 // NOTE: deviceId がある場合は命令を受けて再生するデバイスとして、ない場合は再生先に命令を送る操作側として振る舞う
@@ -139,6 +188,8 @@ export const useRemotePlayback = (
 ) => {
   const playerRef = useRef(player);
   const targetDeviceIdRef = useRef<string | null>(null);
+  const isReplacedDeviceRef = useRef(false);
+  const activeDeviceInstancesRef = useRef<RemotePlaybackDeviceInstance[]>([]);
   const pendingSeekRef = useRef<RemotePendingSeek | null>(null);
   const publishTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -168,11 +219,11 @@ export const useRemotePlayback = (
     () => {},
   );
 
-  const handleMessage = ({ name, data }: InboundMessage) => {
+  const handleMessage = ({ name, data, connectionId }: InboundMessage) => {
     if (name === REMOTE_PLAYBACK_COMMAND_MESSAGE_NAME && deviceId) {
       const message = parseRemotePlaybackCommandMessage(data);
 
-      if (message?.deviceId === deviceId) {
+      if (message?.deviceId === deviceId && !isReplacedDeviceRef.current) {
         executeCommandRef.current(message.command);
       }
 
@@ -186,6 +237,15 @@ export const useRemotePlayback = (
         return;
       }
 
+      const activeInstance = activeDeviceInstancesRef.current.find(
+        (instance) => instance.deviceId === message.deviceId,
+      );
+
+      // NOTE: 同じ再生先が複数開かれている場合、最後に開かれたもの以外の状態で表示が上書きされないようにする
+      if (activeInstance && activeInstance.connectionId !== connectionId) {
+        return;
+      }
+
       // NOTE: デバイス間の時計のずれの影響を受けないよう、送信時刻ではなく受信時刻から再生位置を推定する
       const receivedAt = Date.now();
 
@@ -194,13 +254,41 @@ export const useRemotePlayback = (
     }
   };
 
-  const { publish, isSubscribed } = useRemotePlaybackChannel(
-    channelName,
-    handleMessage,
+  const { publish, isSubscribed, connectionId, deviceInstances } =
+    useRemotePlaybackChannel(channelName, deviceId, handleMessage);
+  const activeDeviceInstances = useMemo(
+    () => getActiveRemotePlaybackDeviceInstances(deviceInstances),
+    [deviceInstances],
   );
+  const onlineDeviceIds = useMemo(
+    () => activeDeviceInstances.map(({ deviceId: id }) => id),
+    [activeDeviceInstances],
+  );
+  // NOTE: presence の同期前や再接続中に自分が一覧から外れても再生を止めないよう、別の場所で開かれた場合のみ置き換えられたとみなす
+  const isReplacedDevice =
+    !!deviceId &&
+    !!connectionId &&
+    activeDeviceInstances.some(
+      (instance) =>
+        instance.deviceId === deviceId &&
+        instance.connectionId !== connectionId,
+    );
+
+  useEffect(() => {
+    isReplacedDeviceRef.current = isReplacedDevice;
+    activeDeviceInstancesRef.current = activeDeviceInstances;
+  }, [activeDeviceInstances, isReplacedDevice]);
+
+  useEffect(() => {
+    if (!isReplacedDevice || !player.isPlaying) {
+      return;
+    }
+
+    player.togglePlayback();
+  }, [isReplacedDevice, player]);
 
   const publishState = useCallback(() => {
-    if (!deviceId) {
+    if (!deviceId || isReplacedDeviceRef.current) {
       return;
     }
 
@@ -480,5 +568,11 @@ export const useRemotePlayback = (
     targetDeviceId,
   ]);
 
-  return { connectedPlayer, targetDeviceId, selectTargetDevice };
+  return {
+    connectedPlayer,
+    targetDeviceId,
+    selectTargetDevice,
+    onlineDeviceIds,
+    isReplacedDevice,
+  };
 };

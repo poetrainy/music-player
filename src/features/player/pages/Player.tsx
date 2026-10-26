@@ -7,6 +7,7 @@ import { PlayerSongInfo } from "@/features/player/components/PlayerSongInfo";
 import { PlayerSongThumbnail } from "@/features/player/components/PlayerSongThumbnail";
 import { usePlayer } from "@/features/player/hook";
 import { PlayerProvider } from "@/features/player/providers/PlayerProvider";
+import { useRemotePlaybackTarget } from "@/features/remote-playback/hook";
 import { buildRemotePlaybackTargetHref } from "@/features/remote-playback/libraries/device";
 import { formatDuration } from "@/library";
 
@@ -48,6 +49,19 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
     playlistId,
     playlistTitle,
   } = usePlayer();
+  const { isReplacedDevice } = useRemotePlaybackTarget();
+
+  if (isReplacedDevice) {
+    return (
+      <main className="h-dvh max-h-100">
+        <section className="bg-surface flex h-full items-center justify-center rounded-xl p-4">
+          <p className="text-muted text-center text-sm">
+            同じ再生先が別の場所で開かれたため、ここでは再生しません
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   if (!currentSong) {
     return (

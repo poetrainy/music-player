@@ -1,5 +1,8 @@
 import devices from "@/features/remote-playback/devices.json";
-import { RemotePlaybackDevice } from "@/features/remote-playback/entity";
+import {
+  RemotePlaybackDevice,
+  RemotePlaybackDeviceInstance,
+} from "@/features/remote-playback/entity";
 
 export const REMOTE_PLAYBACK_DEVICES: RemotePlaybackDevice[] = devices;
 
@@ -87,3 +90,24 @@ export const saveRemotePlaybackTargetDeviceId = (
 
   targetDeviceIdListeners.forEach((listener) => listener());
 };
+
+const isNewerInstance = (
+  instance: RemotePlaybackDeviceInstance,
+  other: RemotePlaybackDeviceInstance,
+): boolean =>
+  instance.enteredAt > other.enteredAt ||
+  (instance.enteredAt === other.enteredAt &&
+    instance.connectionId > other.connectionId);
+
+// NOTE: 同じ再生先が複数の場所で開かれていると命令が重複して実行されるため、最後に開かれたものだけを再生先として扱う
+export const getActiveRemotePlaybackDeviceInstances = (
+  instances: RemotePlaybackDeviceInstance[],
+): RemotePlaybackDeviceInstance[] =>
+  instances.filter(
+    (instance) =>
+      !instances.some(
+        (other) =>
+          other.deviceId === instance.deviceId &&
+          isNewerInstance(other, instance),
+      ),
+  );
