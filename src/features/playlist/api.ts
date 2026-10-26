@@ -1,7 +1,7 @@
 "use server";
 
-import { serviceAdapter } from "@/service/adapter";
 import { Playlist } from "@/features/playlist/entity";
+import { serviceAdapter } from "@/service/adapter";
 
 export const getPlaylists = async (): Promise<Playlist[]> =>
   serviceAdapter.getPlaylists();

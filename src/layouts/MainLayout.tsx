@@ -13,11 +13,23 @@ interface Props {
   children: ReactNode;
   user: User;
   isEmbedded: boolean;
+  remotePlaybackChannelName: string;
+  remotePlaybackDeviceId: string | null;
 }
 
-export function MainLayout({ children, user, isEmbedded }: Props) {
+export function MainLayout({
+  children,
+  user,
+  isEmbedded,
+  remotePlaybackChannelName,
+  remotePlaybackDeviceId,
+}: Props) {
   return (
-    <PlayerProvider userEmail={user.email}>
+    <PlayerProvider
+      userEmail={user.email}
+      remotePlaybackChannelName={remotePlaybackChannelName}
+      remotePlaybackDeviceId={remotePlaybackDeviceId}
+    >
       <Header user={user} isEmbedded={isEmbedded} />
       <main className="mx-auto w-full max-w-300 px-4 pt-6 pb-20">
         <div className="flex items-start gap-6">

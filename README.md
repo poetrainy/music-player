@@ -30,6 +30,7 @@ AUTH_SECRET=                  # `npx auth secret` などで生成
 AUTH_GOOGLE_ID=               # Google Cloud Console で発行
 AUTH_GOOGLE_SECRET=           # Google Cloud Console で発行
 EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み元がチケットの暗号化に使う値と同じにします
+ABLY_API_KEY=                 # リモート再生用。Ably のダッシュボードで発行した API キー
 ```
 
 Google Cloud Console の OAuth クライアントには、認可済みリダイレクト URI として `http://localhost:3000/api/auth/callback/google`（本番環境では `https://<ドメイン>/api/auth/callback/google`）を登録してください。また、YouTube Data API v3 を有効化する必要があります。
@@ -70,6 +71,15 @@ Google Cloud Console の OAuth クライアントには、認可済みリダイ�
 ```
 
 共有鍵を変えると既存の埋め込み用 Cookie は無効になりますが、埋め込み元が新しいチケットで iframe を開き直せば表示が戻ります。
+
+埋め込み表示は、操作 UI のないプレーヤー画面（`/player`）を開きます。
+
+### リモート再生
+
+`device` パラメータに `src/features/remote-playback/devices.json` の `id`（例: `living`）を付けて埋め込むと、その埋め込み表示が再生先のデバイスになります（例: `?ticket=<チケット>&device=living`）。スマートフォンなど通常の画面では、ヘッダーの再生先ボタンからデバイスを選ぶと、再生・一時停止・曲送り・シーク・音量・シャッフル・リピートの操作がそのデバイスに送られ、画面にはそのデバイスで再生中の曲が表示されます。再生中にデバイスを切り替えると、手元の再生を止めて同じ位置から再生先に引き継ぎます。
+
+- 命令は Ably でリアルタイムに届けます。オフラインのデバイス宛ての命令は保存せず、破棄されます
+- 操作できない端末で再生するため、Chromium などのブラウザは `--autoplay-policy=no-user-gesture-required` を付けて起動してください。付けない場合、一度も操作していないページでは音の出る再生をブラウザが止めます
 
 ### 開発サーバーの起動
 

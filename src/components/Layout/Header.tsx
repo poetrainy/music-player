@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Music, Search } from "lucide-react";
+import { RemotePlaybackDeviceControl } from "@/features/remote-playback/components/RemotePlaybackDeviceControl";
 import { User } from "@/features/user/entity";
 import { SERVICE_NAME } from "@/library";
 
@@ -30,6 +31,8 @@ export function Header({ user, isEmbedded }: Props) {
           </Link>
         </h1>
         <nav className="flex items-center gap-3">
+          {/* NOTE: 埋め込み表示は再生先のデバイスとして使うため、再生先の切り替えは操作側の画面にだけ出す */}
+          {!isEmbedded && <RemotePlaybackDeviceControl />}
           <Link
             href="/search"
             className="text-contrast active:bg-contrast/10 flex size-9 shrink-0 items-center justify-center rounded"

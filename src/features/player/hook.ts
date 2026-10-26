@@ -6,35 +6,27 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import {
-  createPlaybackController,
-  PlaybackController,
-} from "@/service/player";
-import {
+  DEFAULT_VOLUME,
   clearPlaybackState,
   createShuffleOrder,
-  DEFAULT_VOLUME,
   getAdjacentSong,
   loadPlaybackState,
-  loadRawPlaybackState,
   loadVolume,
-  PLAYBACK_STATE_STORAGE_KEY,
-  parsePlaybackState,
   savePlaybackState,
   saveVolume,
-  StoredPlaybackState,
 } from "@/features/player/library";
 import { Song } from "@/features/song/entity";
 import { SERVICE_NAME } from "@/library";
+import { PlaybackController, createPlaybackController } from "@/service/player";
 
 export const PLAYER_CONTAINER_ID = "player-embed-container";
 
 const SONG_DETAIL_PATHNAME_PATTERN = /^\/playlists\/[^/]+\/[^/]+$/;
+const PLAYER_PAGE_PATHNAME = "/player";
 
 const PLAYBACK_TIME_POLLING_INTERVAL_MILLISECONDS = 500;
 
@@ -44,7 +36,8 @@ export type MobileView = (typeof MOBILE_VIEWS)[number];
 export const REPEAT_MODES = ["off", "all", "one"] as const;
 export type RepeatMode = (typeof REPEAT_MODES)[number];
 
-interface PlayerContextValue {
+// NOTE: リモート再生で、再生先のデバイスの状態に差し替えた値を同じ形で作るため export する
+export interface PlayerContextValue {
   activeMobileView: MobileView;
   currentSong: Song | null;
   currentTime: number;
@@ -435,7 +428,8 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
         }
       }
 
-      if (nextPlaylistId) {
+      // NOTE: プレーヤー画面は再生先のデバイスで表示し続けるため、曲の詳細ページの URL に書き換えない
+      if (nextPlaylistId && pathname !== PLAYER_PAGE_PATHNAME) {
         window.history.replaceState(
           null,
           "",
@@ -443,7 +437,7 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
         );
       }
     },
-    [resetShuffleOrder],
+    [pathname, resetShuffleOrder],
   );
 
   const playNext = useCallback(() => {
@@ -660,31 +654,4 @@ export const usePlayerController = (userEmail: string): PlayerContextValue => {
     toggleShuffle,
     volume,
   };
-};
-
-const subscribeStoredPlaybackState = (onChange: () => void): (() => void) => {
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key !== PLAYBACK_STATE_STORAGE_KEY) {
-      return;
-    }
-
-    onChange();
-  };
-
-  window.addEventListener("storage", handleStorage);
-
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-  };
-};
-
-// NOTE: storage イベントは保存したタブ自身には届かないため、別タブで再生中の状態を表示する用途に限って使う
-export const useStoredPlaybackState = (): StoredPlaybackState | null => {
-  const raw = useSyncExternalStore(
-    subscribeStoredPlaybackState,
-    loadRawPlaybackState,
-    () => null,
-  );
-
-  return useMemo(() => parsePlaybackState(raw), [raw]);
 };

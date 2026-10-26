@@ -4,12 +4,14 @@ import {
   EMBED_BASE_COLOR_COOKIE_NAME,
   EMBED_BRAND_COLOR_COOKIE_NAME,
   EMBED_COOKIE_NAME,
+  EMBED_DEVICE_COOKIE_NAME,
   EMBED_THEME_COOKIE_NAME,
   decryptEmbedSession,
   isRecord,
   parseEmbedColor,
   parseEmbedTheme,
 } from "@/features/embed/library";
+import { parseRemotePlaybackDeviceId } from "@/features/remote-playback/libraries/device";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 // NOTE: 期限ちょうどに API を呼ぶと失効したトークンで 401 になりうるため、少し手前で更新する
@@ -44,6 +46,12 @@ export const getEmbedBrandColor = async (): Promise<EmbedColor | null> =>
 export const getEmbedTheme = async (): Promise<EmbedTheme> =>
   parseEmbedTheme((await cookies()).get(EMBED_THEME_COOKIE_NAME)?.value) ??
   "dark";
+
+// NOTE: 埋め込み元が再生先のデバイスとして指定した場合のみ、そのデバイス宛ての命令を受けて再生する
+export const getEmbedDeviceId = async (): Promise<string | null> =>
+  parseRemotePlaybackDeviceId(
+    (await cookies()).get(EMBED_DEVICE_COOKIE_NAME)?.value,
+  );
 
 export const getEmbedAccessToken = async (
   refreshToken: string,

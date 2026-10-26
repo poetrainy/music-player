@@ -6,6 +6,8 @@ import {
   EMBED_BRAND_COLOR_COOKIE_OPTIONS,
   EMBED_COOKIE_NAME,
   EMBED_COOKIE_OPTIONS,
+  EMBED_DEVICE_COOKIE_NAME,
+  EMBED_DEVICE_COOKIE_OPTIONS,
   EMBED_SESSION_MAX_AGE_SECONDS,
   EMBED_THEME_COOKIE_NAME,
   EMBED_THEME_COOKIE_OPTIONS,
@@ -14,6 +16,7 @@ import {
   parseEmbedColor,
   parseEmbedTheme,
 } from "@/features/embed/library";
+import { parseRemotePlaybackDeviceId } from "@/features/remote-playback/libraries/device";
 
 // NOTE: 埋め込み元はチケットを初回表示時にしか渡さないため、アクセスのたびに埋め込み用セッションの有効期限を延ばし、使われている限り切れないようにする
 export const proxy = async (request: NextRequest) => {
@@ -67,6 +70,14 @@ export const proxy = async (request: NextRequest) => {
 
   if (theme) {
     response.cookies.set({ ...EMBED_THEME_COOKIE_OPTIONS, value: theme });
+  }
+
+  const deviceId = parseRemotePlaybackDeviceId(
+    request.cookies.get(EMBED_DEVICE_COOKIE_NAME)?.value,
+  );
+
+  if (deviceId) {
+    response.cookies.set({ ...EMBED_DEVICE_COOKIE_OPTIONS, value: deviceId });
   }
 
   return response;
