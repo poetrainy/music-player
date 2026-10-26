@@ -265,9 +265,14 @@ export const useRemotePlayback = (
     [activeDeviceInstances],
   );
   // NOTE: presence の同期前や再接続中に自分が一覧から外れても再生を止めないよう、別の場所で開かれた場合のみ置き換えられたとみなす
+  // NOTE: 開いた直後は自分が一覧に入る前に以前の接続だけが見え、置き換えられたと一瞬表示されてしまうため、自分が一覧に入ってから判定する
   const isReplacedDevice =
     !!deviceId &&
     !!connectionId &&
+    deviceInstances.some(
+      ({ connectionId: instanceConnectionId }) =>
+        instanceConnectionId === connectionId,
+    ) &&
     activeDeviceInstances.some(
       (instance) =>
         instance.deviceId === deviceId &&
