@@ -3,7 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { getEmbedTheme } from "@/features/embed/api";
 import { EmbedThemeReceiver } from "@/features/embed/components/EmbedThemeReceiver";
-import { SERVICE_NAME, SERVICE_THEME_COLOR, cn } from "@/library";
+import {
+  SERVICE_NAME,
+  SERVICE_THEME_COLOR,
+  THEME_RESTORE_SCRIPT,
+  cn,
+} from "@/library";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,12 +50,17 @@ export default async function RootLayout({
     <html
       lang="ja"
       data-theme={theme}
+      // NOTE: 保存されたテーマを hydration 前に data-theme へ反映するため、サーバーの値との差分を許容する
+      suppressHydrationWarning
       className={cn(
         geistSans.variable,
         geistMono.variable,
         "h-full antialiased",
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_RESTORE_SCRIPT }} />
+      </head>
       <body className="bg-surface text-contrast flex min-h-full flex-col">
         <div className="w-full flex-1">{children}</div>
         <EmbedThemeReceiver />

@@ -3,12 +3,39 @@ import { RemotePlaybackDevice } from "@/features/remote-playback/entity";
 
 export const REMOTE_PLAYBACK_DEVICES: RemotePlaybackDevice[] = devices;
 
-const TARGET_DEVICE_STORAGE_KEY = "remote-playback-target-device";
+export const REMOTE_PLAYBACK_DEVICE_QUERY_NAME = "device";
+const REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_NAME =
+  "music-player-remote-playback-target-device";
+const REMOTE_PLAYBACK_TARGET_DEVICE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
+
+// NOTE: クエリで再生先を指定されたときにサーバー側でも書き換えられるよう、再生先は Cookie に保存する
+export const REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_OPTIONS = {
+  name: REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_NAME,
+  path: "/",
+  sameSite: "lax",
+  maxAge: REMOTE_PLAYBACK_TARGET_DEVICE_MAX_AGE_SECONDS,
+} as const;
 
 export const parseRemotePlaybackDeviceId = (
   value: string | null | undefined,
 ): string | null =>
   REMOTE_PLAYBACK_DEVICES.find(({ id }) => id === value)?.id ?? null;
+
+// NOTE: 開いた画面の再生先を指定のデバイスにするため、クエリで再生先を渡す。指定がない場合は自分で再生する設定のまま開く
+export const buildRemotePlaybackTargetHref = (
+  path: string,
+  deviceId: string | null,
+): string => {
+  if (!deviceId) {
+    return path;
+  }
+
+  const searchParams = new URLSearchParams({
+    [REMOTE_PLAYBACK_DEVICE_QUERY_NAME]: deviceId,
+  });
+
+  return `${path}?${searchParams}`;
+};
 
 // NOTE: チャンネル名からメールアドレスを読み取れないよう、ハッシュにして使う
 export const createRemotePlaybackChannelName = async (
@@ -26,25 +53,16 @@ export const createRemotePlaybackChannelName = async (
 };
 
 const targetDeviceIdListeners = new Set<() => void>();
-// NOTE: localStorage を使えない環境でも切り替えた再生先を使い続けられるよう、読み込んだ値をメモリにも持つ
-let cachedTargetDeviceId: string | null | undefined;
-
-const readStoredTargetDeviceId = (): string | null => {
-  try {
-    return parseRemotePlaybackDeviceId(
-      localStorage.getItem(TARGET_DEVICE_STORAGE_KEY),
-    );
-  } catch {
-    return null;
-  }
-};
 
 export const loadRemotePlaybackTargetDeviceId = (): string | null => {
-  if (cachedTargetDeviceId === undefined) {
-    cachedTargetDeviceId = readStoredTargetDeviceId();
-  }
+  const prefix = `${REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_NAME}=`;
 
-  return cachedTargetDeviceId;
+  return parseRemotePlaybackDeviceId(
+    document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith(prefix))
+      ?.slice(prefix.length),
+  );
 };
 
 export const subscribeRemotePlaybackTargetDeviceId = (
@@ -60,15 +78,12 @@ export const subscribeRemotePlaybackTargetDeviceId = (
 export const saveRemotePlaybackTargetDeviceId = (
   deviceId: string | null,
 ): void => {
-  cachedTargetDeviceId = deviceId;
+  const { name, path, sameSite, maxAge } =
+    REMOTE_PLAYBACK_TARGET_DEVICE_COOKIE_OPTIONS;
 
-  try {
-    if (deviceId) {
-      localStorage.setItem(TARGET_DEVICE_STORAGE_KEY, deviceId);
-    } else {
-      localStorage.removeItem(TARGET_DEVICE_STORAGE_KEY);
-    }
-  } catch {}
+  document.cookie = deviceId
+    ? `${name}=${deviceId}; path=${path}; max-age=${maxAge}; samesite=${sameSite}`
+    : `${name}=; path=${path}; max-age=0; samesite=${sameSite}`;
 
   targetDeviceIdListeners.forEach((listener) => listener());
 };

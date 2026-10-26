@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { Header } from "@/components/Layout/Header";
+import { useIsEmbedded } from "@/features/embed/hook";
 import { PlayerMiniPlayer } from "@/features/player/components/PlayerMiniPlayer";
 import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { PlayerSongDetailDrawer } from "@/features/player/components/PlayerSongDetailDrawer";
@@ -12,7 +13,7 @@ import { User } from "@/features/user/entity";
 interface Props {
   children: ReactNode;
   user: User;
-  isEmbedded: boolean;
+  hasEmbedSession: boolean;
   remotePlaybackChannelName: string;
   remotePlaybackDeviceId: string | null;
 }
@@ -20,15 +21,18 @@ interface Props {
 export function MainLayout({
   children,
   user,
-  isEmbedded,
+  hasEmbedSession,
   remotePlaybackChannelName,
   remotePlaybackDeviceId,
 }: Props) {
+  const isEmbedded = useIsEmbedded(hasEmbedSession);
+
   return (
     <PlayerProvider
       userEmail={user.email}
       remotePlaybackChannelName={remotePlaybackChannelName}
-      remotePlaybackDeviceId={remotePlaybackDeviceId}
+      // NOTE: 直接開いた画面は操作側として使うため、埋め込み時の再生デバイスの指定を引き継がない
+      remotePlaybackDeviceId={isEmbedded ? remotePlaybackDeviceId : null}
     >
       <Header user={user} isEmbedded={isEmbedded} />
       <main className="mx-auto w-full max-w-300 px-4 pt-6 pb-20">

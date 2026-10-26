@@ -9,7 +9,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
-  const isEmbedded = !!(await getEmbedSession());
+  const hasEmbedSession = !!(await getEmbedSession());
   const remotePlaybackChannelName = await createRemotePlaybackChannelName(
     user.email,
   );
@@ -18,7 +18,7 @@ export default async function Layout({
   return (
     <MainLayout
       user={user}
-      isEmbedded={isEmbedded}
+      hasEmbedSession={hasEmbedSession}
       remotePlaybackChannelName={remotePlaybackChannelName}
       remotePlaybackDeviceId={remotePlaybackDeviceId}
     >

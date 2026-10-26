@@ -1,4 +1,5 @@
 import { ClassValue, clsx } from "clsx";
+import { THEMES, Theme } from "@/entity";
 
 export const cn = (...inputs: ClassValue[]): string => clsx(inputs);
 
@@ -28,3 +29,19 @@ export const formatDuration = (seconds: number): string => {
 
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 };
+
+const THEME_STORAGE_KEY = "music-player-theme";
+
+export const parseTheme = (value: string | null | undefined): Theme | null =>
+  THEMES.find((theme) => theme === value) ?? null;
+
+export const saveTheme = (theme: Theme): void => {
+  document.documentElement.dataset.theme = theme;
+
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {}
+};
+
+// NOTE: 描画前に適用して初期表示のちらつきを避けるため、hydration より前に実行するスクリプトとして埋め込む。iframe 内では埋め込み元の指定を優先するため適用しない
+export const THEME_RESTORE_SCRIPT = `try{if(window.self===window.top){var theme=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});if(${JSON.stringify(THEMES)}.indexOf(theme)!==-1){document.documentElement.dataset.theme=theme}}}catch(error){}`;

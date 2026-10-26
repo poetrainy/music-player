@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Music, Search } from "lucide-react";
+import { HeaderThemeToggle } from "@/components/Layout/HeaderThemeToggle";
 import { RemotePlaybackDeviceControl } from "@/features/remote-playback/components/RemotePlaybackDeviceControl";
 import { User } from "@/features/user/entity";
 import { SERVICE_NAME } from "@/library";
@@ -31,8 +32,6 @@ export function Header({ user, isEmbedded }: Props) {
           </Link>
         </h1>
         <nav className="flex items-center gap-3">
-          {/* NOTE: 埋め込み表示は再生先のデバイスとして使うため、再生先の切り替えは操作側の画面にだけ出す */}
-          {!isEmbedded && <RemotePlaybackDeviceControl />}
           <Link
             href="/search"
             className="text-contrast active:bg-contrast/10 flex size-9 shrink-0 items-center justify-center rounded"
@@ -40,7 +39,11 @@ export function Header({ user, isEmbedded }: Props) {
           >
             <Search className="size-6" />
           </Link>
-          {/* NOTE: 埋め込み表示ではアカウントの操作を埋め込み元で行うため、アカウントへの導線を出さない */}
+          {/* NOTE: 埋め込み表示は再生先のデバイスとして使うため、再生先の切り替えは操作側の画面にだけ出す */}
+          {!isEmbedded && <RemotePlaybackDeviceControl />}
+          {/* NOTE: 埋め込み表示のテーマは埋め込み元が指定するため、切り替えは通常表示にだけ出す */}
+          {!isEmbedded && <HeaderThemeToggle />}
+          {/* NOTE: 埋め込み表示ではアカウントの操作を埋め込み元で行うため、アカウントへの導線は通常表示にだけ出す */}
           {!isEmbedded && (
             <Link
               href="/account"
