@@ -1,11 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import {
-  getEmbedBaseColor,
-  getEmbedBrandColor,
-  getEmbedSession,
-} from "@/features/embed/api";
-import { EmbedColorStyle } from "@/features/embed/components/EmbedColorStyle";
+import { getEmbedSession } from "@/features/embed/api";
 
 export default async function Layout({
   children,
@@ -21,16 +16,5 @@ export default async function Layout({
     redirect("/signin");
   }
 
-  const embedBaseColor = await getEmbedBaseColor();
-  const embedBrandColor = await getEmbedBrandColor();
-
-  return (
-    <>
-      <EmbedColorStyle
-        baseColor={embedBaseColor}
-        brandColor={embedBrandColor}
-      />
-      {children}
-    </>
-  );
+  return children;
 }
