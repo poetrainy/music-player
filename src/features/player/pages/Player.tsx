@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { Pause } from "lucide-react";
 import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { PlayerSongInfo } from "@/features/player/components/PlayerSongInfo";
 import { PlayerSongThumbnail } from "@/features/player/components/PlayerSongThumbnail";
@@ -39,8 +40,14 @@ interface PlayerNowPlayingProps {
 }
 
 function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
-  const { currentSong, currentTime, duration, playlistId, playlistTitle } =
-    usePlayer();
+  const {
+    currentSong,
+    currentTime,
+    duration,
+    isPlaying,
+    playlistId,
+    playlistTitle,
+  } = usePlayer();
 
   if (!currentSong) {
     return (
@@ -71,6 +78,12 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
               isFullTextVisible
             />
             <div className="flex flex-col gap-1">
+              {!isPlaying && (
+                <p className="text-muted flex items-center gap-1 text-xs">
+                  <Pause aria-hidden className="size-3" />
+                  一時停止中
+                </p>
+              )}
               <progress
                 value={currentTime}
                 max={totalSeconds || 1}
