@@ -64,6 +64,7 @@ export interface PlayerContextValue {
   repeatMode: RepeatMode;
   restorePlayback: () => void;
   restoreVolume: () => void;
+  resumePlayback: () => void;
   seekTo: (seconds: number) => void;
   setActiveMobileView: (view: MobileView) => void;
   setVolume: (volume: number) => void;
@@ -490,6 +491,20 @@ export const usePlayerController = (
     }
   }, [isPlaying]);
 
+  // NOTE: 画面が操作される前はブラウザが音の出る再生を止め、再生中の扱いのまま音が出ないため、操作されたあとに再生し直せるようにする
+  const resumePlayback = useCallback(() => {
+    if (
+      !isPlayingRef.current ||
+      !playerRef.current ||
+      !isPlayerReadyRef.current
+    ) {
+      return;
+    }
+
+    autoplayIntentRef.current = true;
+    playerRef.current.play();
+  }, []);
+
   const cycleRepeatMode = useCallback(() => {
     setRepeatMode((previous) => {
       if (previous === "off") {
@@ -662,6 +677,7 @@ export const usePlayerController = (
     repeatMode,
     restorePlayback,
     restoreVolume,
+    resumePlayback,
     seekTo,
     setActiveMobileView,
     setVolume,

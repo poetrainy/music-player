@@ -29,6 +29,9 @@ export const EMBED_THEME_MESSAGE_TYPE = "music-player:theme";
 // NOTE: 同じ再生先が別の場所で開かれたかどうかを埋め込み元に知らせるメッセージの種類。埋め込み元と同じ値を使う
 export const EMBED_REPLACED_MESSAGE_TYPE = "music-player:replaced";
 
+// NOTE: 埋め込み元で再生が許可されたときに、止められていた再生をやり直すよう送られるメッセージの種類。埋め込み元と同じ値を使う
+export const EMBED_RESUME_MESSAGE_TYPE = "music-player:resume";
+
 export interface EmbedReplacedMessage {
   type: typeof EMBED_REPLACED_MESSAGE_TYPE;
   isReplaced: boolean;

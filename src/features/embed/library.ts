@@ -1,6 +1,7 @@
 import { EncryptJWT, jwtDecrypt } from "jose";
 import colors from "tailwindcss/colors";
 import {
+  EMBED_RESUME_MESSAGE_TYPE,
   EMBED_THEMES,
   EMBED_THEME_MESSAGE_TYPE,
   EmbedColor,
@@ -101,6 +102,9 @@ export const parseEmbedThemeMessage = (data: unknown): EmbedTheme | null =>
   typeof data.theme === "string"
     ? parseEmbedTheme(data.theme)
     : null;
+
+export const isEmbedResumeMessage = (data: unknown): boolean =>
+  isRecord(data) && data.type === EMBED_RESUME_MESSAGE_TYPE;
 
 // NOTE: 再生先のデバイスと色は iframe の表示ごとに決まり、サイト本体の表示に残さないよう、Cookie ではなくプレーヤー画面のクエリで渡す
 export const buildEmbedPlayerUrl = (
