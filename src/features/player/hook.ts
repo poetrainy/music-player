@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { RepeatMode } from "@/features/player/entity";
 import {
   DEFAULT_VOLUME,
   clearPlaybackState,
@@ -32,9 +33,6 @@ const PLAYBACK_TIME_POLLING_INTERVAL_MILLISECONDS = 500;
 
 export const MOBILE_VIEWS = ["list", "player"] as const;
 export type MobileView = (typeof MOBILE_VIEWS)[number];
-
-export const REPEAT_MODES = ["off", "all", "one"] as const;
-export type RepeatMode = (typeof REPEAT_MODES)[number];
 
 // NOTE: リモート再生で、再生先のデバイスの状態に差し替えた値を同じ形で作るため export する
 export interface PlayerContextValue {

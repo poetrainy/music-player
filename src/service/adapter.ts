@@ -1,4 +1,4 @@
-import { Playlist } from "@/features/playlist/entity";
+import { Playlist, PlaylistSummary } from "@/features/playlist/entity";
 import { Song } from "@/features/song/entity";
 import { youtubeAdapter } from "@/service/vendors/youtube/adapter";
 
@@ -14,6 +14,12 @@ export interface ServiceAdapter {
   ) => Promise<void>;
   getSongsByIds: (songIds: string[]) => Promise<Song[]>;
   searchSongs: (query: string) => Promise<Song[]>;
+  // NOTE: サインインしていない場面（Discord からの操作）でも使えるよう、アクセストークンを引数で受け取る
+  getPlaylistSummaries: (accessToken: string) => Promise<PlaylistSummary[]>;
+  getPlaylistFirstSong: (
+    accessToken: string,
+    playlistId: string,
+  ) => Promise<Song | null>;
 }
 
 // NOTE: 別のサービスに差し替える場合はここを新しい vendor の adapter に変更する。

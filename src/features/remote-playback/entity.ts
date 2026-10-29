@@ -1,4 +1,4 @@
-import { RepeatMode } from "@/features/player/hook";
+import { RepeatMode } from "@/features/player/entity";
 import { Song } from "@/features/song/entity";
 
 export interface RemotePlaybackDevice {
@@ -64,6 +64,12 @@ export interface RemotePlaybackState {
   volume: number;
   isShuffled: boolean;
   repeatMode: RepeatMode;
+}
+
+export interface RemotePlaybackCommandResult {
+  isDeviceOnline: boolean;
+  // NOTE: 再生先から状態が届かなかった場合は null
+  state: RemotePlaybackState | null;
 }
 
 export interface RemotePlaybackStateMessage {

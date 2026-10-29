@@ -1,6 +1,10 @@
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
-import { Playlist, PlaylistSong } from "@/features/playlist/entity";
+import {
+  Playlist,
+  PlaylistSong,
+  PlaylistSummary,
+} from "@/features/playlist/entity";
 import { Song } from "@/features/song/entity";
 import { chunkArray } from "@/library";
 import { ServiceAdapter } from "@/service/adapter";
@@ -188,7 +192,7 @@ const getPlaylistSongs = async (
 
 const toPlaylistSummary = (
   item: gapi.client.youtube.Playlist,
-): { id: string; title: string }[] => {
+): PlaylistSummary[] => {
   if (!item.id || !item.snippet?.title) {
     return [];
   }
@@ -258,16 +262,53 @@ const selectCollageSongs = async (
   return collageSongs;
 };
 
-const fetchPlaylists = async (accessToken: string): Promise<Playlist[]> => {
+const getPlaylistSummaries = async (
+  accessToken: string,
+): Promise<PlaylistSummary[]> => {
   const data = await fetchApi<gapi.client.youtube.PlaylistListResponse>(
     accessToken,
     "/playlists",
     { part: "snippet", mine: "true", maxResults: "50" },
   );
 
-  const summaries = (data.items ?? [])
+  return (data.items ?? [])
     .flatMap(toPlaylistSummary)
     .sort((a, b) => a.title.localeCompare(b.title, "ja"));
+};
+
+// NOTE: 再生の開始に必要なのは最初の曲だけで、残りの曲は再生先が自分で取得するため、先頭の数件だけ取得する
+const PLAYLIST_FIRST_SONG_CANDIDATE_COUNT = 5;
+
+// NOTE: 削除・非公開になった動画は videos.list で返らないため、先頭から順に再生できる曲を探す
+const getPlaylistFirstSong = async (
+  accessToken: string,
+  playlistId: string,
+): Promise<Song | null> => {
+  const data = await fetchApi<gapi.client.youtube.PlaylistItemListResponse>(
+    accessToken,
+    "/playlistItems",
+    {
+      part: "snippet",
+      playlistId,
+      maxResults: String(PLAYLIST_FIRST_SONG_CANDIDATE_COUNT),
+    },
+  );
+  const videoIds = (data.items ?? []).flatMap((item) => {
+    const videoId = item.snippet?.resourceId?.videoId;
+
+    return videoId ? [videoId] : [];
+  });
+  const songs = await getSongsByIds(accessToken, videoIds);
+
+  return (
+    videoIds
+      .map((videoId) => songs.find(({ id }) => id === videoId))
+      .find((song) => !!song) ?? null
+  );
+};
+
+const fetchPlaylists = async (accessToken: string): Promise<Playlist[]> => {
+  const summaries = await getPlaylistSummaries(accessToken);
 
   return Promise.all(
     summaries.map(async (summary) => {
@@ -419,4 +460,6 @@ export const youtubeAdapter: ServiceAdapter = {
   deletePlaylistSong,
   getSongsByIds: getSongsByIdsWithAuth,
   searchSongs: searchSongsWithAuth,
+  getPlaylistSummaries,
+  getPlaylistFirstSong,
 };

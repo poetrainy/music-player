@@ -1,5 +1,5 @@
 import { isRecord } from "@/features/embed/library";
-import { REPEAT_MODES, RepeatMode } from "@/features/player/hook";
+import { REPEAT_MODES, RepeatMode } from "@/features/player/entity";
 import {
   REMOTE_PLAYBACK_SIMPLE_COMMAND_TYPES,
   RemotePlaybackCommand,

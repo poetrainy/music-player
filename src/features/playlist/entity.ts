@@ -4,6 +4,11 @@ export interface PlaylistSong extends Song {
   playlistItemId: string;
 }
 
+export interface PlaylistSummary {
+  id: string;
+  title: string;
+}
+
 export interface Playlist {
   id: string;
   title: string;
