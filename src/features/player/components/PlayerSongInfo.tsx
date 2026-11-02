@@ -3,39 +3,35 @@ import { Song } from "@/features/song/entity";
 
 const cvaPlayerSongInfoTitle = cva("text-contrast text-sm font-medium", {
   variants: {
-    isFullTextVisible: {
-      true: "wrap-anywhere",
-      false: "truncate",
+    variant: {
+      "control-bar": "truncate",
+      widget: "line-clamp-2 wrap-anywhere",
     },
   },
 });
 
 const cvaPlayerSongInfoDetail = cva("text-muted text-xs", {
   variants: {
-    isFullTextVisible: {
-      true: "wrap-anywhere",
-      false: "truncate",
+    variant: {
+      "control-bar": "truncate",
+      widget: "line-clamp-2 wrap-anywhere",
     },
   },
 });
 
+type PlayerSongInfoVariant = "control-bar" | "widget";
+
 interface Props {
   song: Song;
   playlistTitle: string | null;
-  isFullTextVisible?: boolean;
+  variant: PlayerSongInfoVariant;
 }
 
-export function PlayerSongInfo({
-  song,
-  playlistTitle,
-  isFullTextVisible = false,
-}: Props) {
+export function PlayerSongInfo({ song, playlistTitle, variant }: Props) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5">
-      <p className={cvaPlayerSongInfoTitle({ isFullTextVisible })}>
-        {song.title}
-      </p>
-      <p className={cvaPlayerSongInfoDetail({ isFullTextVisible })}>
+      <p className={cvaPlayerSongInfoTitle({ variant })}>{song.title}</p>
+      <p className={cvaPlayerSongInfoDetail({ variant })}>
         {playlistTitle ? `${song.artist}・${playlistTitle}` : song.artist}
       </p>
     </div>

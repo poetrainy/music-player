@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { Header } from "@/components/Layout/Header";
 import { useIsEmbedded } from "@/features/embed/hook";
-import { PlayerMiniPlayer } from "@/features/player/components/PlayerMiniPlayer";
+import { PlayerControlBar } from "@/features/player/components/PlayerControlBar";
 import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
 import { PlayerSongDetailDrawer } from "@/features/player/components/PlayerSongDetailDrawer";
 import { PlayerSongDetailPanel } from "@/features/player/components/PlayerSongDetailPanel";
@@ -40,7 +40,7 @@ export function MainLayout({
           <PlayerSongDetailPanel />
         </div>
       </main>
-      <PlayerMiniPlayer />
+      <PlayerControlBar />
       <PlayerSongDetailDrawer />
       <PlayerPlaybackRestore />
     </PlayerProvider>

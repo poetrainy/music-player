@@ -11,7 +11,7 @@ import { PlayerVolumeControl } from "@/features/player/components/PlayerVolumeCo
 import { usePlayer } from "@/features/player/hook";
 import { cn } from "@/library";
 
-export function PlayerMiniPlayer() {
+export function PlayerControlBar() {
   const {
     activeMobileView,
     currentSong,
@@ -53,7 +53,7 @@ export function PlayerMiniPlayer() {
       />
       <div className="mx-auto flex max-w-300 items-center gap-4 px-4 py-2">
         <PlayerSongThumbnail song={currentSong} size="small" />
-        <PlayerMiniPlayerSongInfoLink
+        <PlayerControlBarSongInfoLink
           playlistId={playlistId}
           songId={currentSong.id}
           onClick={() => setActiveMobileView("player")}
@@ -61,8 +61,9 @@ export function PlayerMiniPlayer() {
           <PlayerSongInfo
             song={currentSong}
             playlistTitle={songInfoPlaylistTitle}
+            variant="control-bar"
           />
-        </PlayerMiniPlayerSongInfoLink>
+        </PlayerControlBarSongInfoLink>
         <button
           type="button"
           onClick={() => setActiveMobileView("player")}
@@ -71,6 +72,7 @@ export function PlayerMiniPlayer() {
           <PlayerSongInfo
             song={currentSong}
             playlistTitle={songInfoPlaylistTitle}
+            variant="control-bar"
           />
         </button>
         <PlayerVolumeControl />
@@ -118,19 +120,19 @@ export function PlayerMiniPlayer() {
 const PLAYER_MINI_PLAYER_SONG_INFO_LINK_CLASS_NAME =
   "hidden max-w-169 min-w-0 items-center gap-3 text-left md:flex";
 
-interface PlayerMiniPlayerSongInfoLinkProps {
+interface PlayerControlBarSongInfoLinkProps {
   playlistId: string | null;
   songId: string;
   onClick: () => void;
   children: ReactNode;
 }
 
-function PlayerMiniPlayerSongInfoLink({
+function PlayerControlBarSongInfoLink({
   playlistId,
   songId,
   onClick,
   children,
-}: PlayerMiniPlayerSongInfoLinkProps) {
+}: PlayerControlBarSongInfoLinkProps) {
   if (!playlistId) {
     return (
       <div className={PLAYER_MINI_PLAYER_SONG_INFO_LINK_CLASS_NAME}>

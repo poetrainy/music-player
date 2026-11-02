@@ -45,14 +45,7 @@ interface PlayerNowPlayingProps {
 }
 
 function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
-  const {
-    currentSong,
-    currentTime,
-    duration,
-    isPlaying,
-    playlistId,
-    playlistTitle,
-  } = usePlayer();
+  const { currentSong, currentTime, duration, isPlaying } = usePlayer();
   const { isReplacedDevice } = useRemotePlaybackTarget();
 
   if (isReplacedDevice) {
@@ -92,8 +85,8 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
           <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 self-stretch">
             <PlayerSongInfo
               song={currentSong}
-              playlistTitle={playlistId ? playlistTitle : null}
-              isFullTextVisible
+              playlistTitle={null}
+              variant="widget"
             />
             <div className="flex flex-col gap-1">
               {!isPlaying && (
