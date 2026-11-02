@@ -79,7 +79,7 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
       <PlayerTopLink deviceId={remotePlaybackDeviceId}>
         <section
           aria-label="再生中の曲"
-          className="bg-surface flex h-full items-center gap-6 rounded-xl p-4"
+          className="bg-surface flex h-full items-center gap-3 rounded-xl p-4"
         >
           <PlayerSongThumbnail song={currentSong} size="large" />
           <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 self-stretch">
