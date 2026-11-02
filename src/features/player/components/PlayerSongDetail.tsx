@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { cva } from "class-variance-authority";
 import {
-  Pause,
   Play,
   Repeat,
   Repeat1,
@@ -12,6 +11,7 @@ import {
   SkipForward,
   X,
 } from "lucide-react";
+import { CgPlayPause } from "react-icons/cg";
 import { IconButton } from "@/components/IconButton";
 import { usePlayer } from "@/features/player/hook";
 import { SongThumbnail } from "@/features/song/components/SongThumbnail";
@@ -132,7 +132,7 @@ export function PlayerSongDetail() {
             className="bg-brand active:bg-brand/80 flex size-16 items-center justify-center rounded-full text-black shadow-lg shadow-black/40"
           >
             {isPlaying ? (
-              <Pause className="size-7" fill="currentColor" />
+              <CgPlayPause aria-hidden="true" className="size-7" />
             ) : (
               <Play className="ml-1 size-7" fill="currentColor" />
             )}

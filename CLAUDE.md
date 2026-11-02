@@ -16,6 +16,7 @@
 - prettier-plugin-tailwindcss
 - @trivago/prettier-plugin-sort-imports
 - Lucide Icons
+- React Icons
 
 ## フォーマットルール
 
@@ -260,7 +261,7 @@ function Component() {
 
 ### その他
 
-- SVG を独自に作成せず、Lucide Icons を使用すること
+- SVG を独自に作成せず、Lucide Icons または React Icons を使用すること
 - 不要なコメントは追加しないこと
 - この MD 内で指示した必要なコメントは、プレフィックスに `NOTE: ` をつけること
 - コメントは「経緯（〜という事例があった／〜が原因で不具合が起きたためこう直した等）」を語らず、「その書き方を選んだ理由・回避したい事象」を将来に向けた形で書くこと。経緯の記録は commit message や PR の説明に任せ、コード上のコメントはコードと一緒に読んだときに意味が通る書き方にする

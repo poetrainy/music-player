@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Play, SkipBack, SkipForward } from "lucide-react";
+import { CgPlayPause } from "react-icons/cg";
 import { IconButton } from "@/components/IconButton";
 import { PlayerSongInfo } from "@/features/player/components/PlayerSongInfo";
 import { PlayerSongThumbnail } from "@/features/player/components/PlayerSongThumbnail";
@@ -95,7 +96,7 @@ export function PlayerControlBar() {
               className="bg-brand active:bg-brand/80 flex size-9 shrink-0 items-center justify-center rounded-full text-black"
             >
               {isPlaying ? (
-                <Pause className="size-4" fill="currentColor" />
+                <CgPlayPause aria-hidden="true" className="size-4" />
               ) : (
                 <Play className="ml-0.5 size-4" fill="currentColor" />
               )}

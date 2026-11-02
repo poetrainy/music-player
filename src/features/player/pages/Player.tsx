@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Pause } from "lucide-react";
+import { CgPlayPause } from "react-icons/cg";
 import { EmbedPlaybackResumer } from "@/features/embed/components/EmbedPlaybackResumer";
 import { EmbedReplacedNotifier } from "@/features/embed/components/EmbedReplacedNotifier";
 import { PlayerPlaybackRestore } from "@/features/player/components/PlayerPlaybackRestore";
@@ -91,7 +91,7 @@ function PlayerNowPlaying({ remotePlaybackDeviceId }: PlayerNowPlayingProps) {
             <div className="flex flex-col gap-1">
               {!isPlaying && (
                 <p className="text-muted flex items-center gap-1 text-xs">
-                  <Pause aria-hidden className="size-3" />
+                  <CgPlayPause aria-hidden="true" className="size-3" />
                   一時停止中
                 </p>
               )}
