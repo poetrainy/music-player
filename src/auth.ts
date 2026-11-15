@@ -1,13 +1,18 @@
 import NextAuth from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Google from "next-auth/providers/google";
-import { isAllowedEmail, parseAllowedEmails } from "@/features/auth/library";
+import {
+  getSessionCookie,
+  isAllowedEmail,
+  parseAllowedEmails,
+} from "@/features/auth/library";
 import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
 
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
     error?: string;
+    isAllowed?: boolean;
   }
 }
 
@@ -15,8 +20,9 @@ declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
-    expiresAt?: number;
+    expiresAtSeconds?: number;
     error?: string;
+    isAllowed?: boolean;
   }
 }
 
@@ -52,7 +58,7 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
     return {
       ...token,
       accessToken: access_token,
-      expiresAt: Math.floor(Date.now() / 1000) + expires_in,
+      expiresAtSeconds: Math.floor(Date.now() / 1000) + expires_in,
       refreshToken: refresh_token ?? token.refreshToken,
     };
   } catch {
@@ -60,7 +66,12 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
   }
 };
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const {
+  handlers,
+  auth: authWithoutAllowedCheck,
+  signIn,
+  signOut,
+} = NextAuth({
   providers: [
     Google({
       authorization: {
@@ -73,6 +84,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  cookies: { sessionToken: getSessionCookie() },
   callbacks: {
     signIn: ({ profile }) =>
       profile?.email_verified === true &&
@@ -86,12 +98,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ...token,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
-          expiresAt: account.expires_at,
+          expiresAtSeconds: account.expires_at,
           error: undefined,
+          isAllowed: true,
         };
       }
 
-      if (token.expiresAt && Date.now() < token.expiresAt * 1000) {
+      if (
+        token.expiresAtSeconds &&
+        Date.now() < token.expiresAtSeconds * 1000
+      ) {
         return token;
       }
 
@@ -100,8 +116,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session: async ({ session, token }) => {
       session.accessToken = token.accessToken;
       session.error = token.error;
+      session.isAllowed = token.isAllowed === true;
 
       return session;
     },
   },
 });
+
+// NOTE: サインインの可否は home が判定して Cookie の isAllowed に入れる。jwt コールバックで null を返すと Cookie ごと削除され、共有している home・recipes のセッションまで消えるため、ここで未サインインとして扱う
+export const auth = async () => {
+  const session = await authWithoutAllowedCheck();
+
+  return session?.isAllowed ? session : null;
+};

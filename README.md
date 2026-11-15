@@ -29,6 +29,8 @@
 AUTH_SECRET=                  # `npx auth secret` などで生成
 AUTH_GOOGLE_ID=               # Google Cloud Console で発行
 AUTH_GOOGLE_SECRET=           # Google Cloud Console で発行
+AUTH_COOKIE_DOMAIN=            # home・recipes と共有するセッション Cookie のドメイン。本番は `.poetrainy.vercel.app`、ローカルは空。AUTH_SECRET も 3 アプリで同じ値にします
+HOME_URL=                     # サインインを行う home の URL。空の場合は https://poetrainy.vercel.app
 EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み元がチケットの暗号化に使う値と同じにします
 ABLY_API_KEY=                 # リモート再生用。Ably のダッシュボードで発行した API キー
 DISCORD_PUBLIC_KEY=           # Discord からの操作用。Discord のアプリの Public Key
