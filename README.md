@@ -15,7 +15,7 @@
 ## 技術スタック
 
 - Next.js 16 (App Router) / React 19 / TypeScript
-- Auth.js (NextAuth v5) + Google OAuth
+- auth（Auth.js / Google OAuth）が発行したセッション Cookie を読む
 - Tailwind CSS 4 / Class Variance Authority (CVA)
 - YouTube Data API v3 / YouTube IFrame Player API（現在有効な vendor）
 
@@ -26,16 +26,12 @@
 `.env.local` に以下を設定してください。
 
 ```bash
-AUTH_SECRET=                  # `npx auth secret` などで生成
-AUTH_GOOGLE_ID=               # Google Cloud Console で発行
-AUTH_GOOGLE_SECRET=           # Google Cloud Console で発行
-AUTH_COOKIE_DOMAIN=            # home・recipes と共有するセッション Cookie のドメイン。本番は `.poetrainy.vercel.app`、ローカルは空。AUTH_SECRET も 3 アプリで同じ値にします
-HOME_URL=                     # サインインを行う home の URL。空の場合は https://poetrainy.vercel.app
-EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み元がチケットの暗号化に使う値と同じにします
+AUTH_SECRET=                  # auth・home・recipes と同じ値にします（セッション Cookie の復号に使う）
+EMBED_SECRET=                 # 埋め込み表示用の共有鍵。埋め込み元がチケットの暗号化に使う値、および auth の `EMBED_SECRET` と同じにします
 ABLY_API_KEY=                 # リモート再生用。Ably のダッシュボードで発行した API キー
 ```
 
-Google Cloud Console の OAuth クライアントには、認可済みリダイレクト URI として `http://localhost:3999/api/auth/callback/google`（本番環境では `https://<ドメイン>/api/auth/callback/google`）を登録してください。また、YouTube Data API v3 を有効化する必要があります。
+サインインは auth が行います（OAuth クライアントのリダイレクト URI は auth に登録します）。また、YouTube Data API v3 を有効化する必要があります。
 
 ### 埋め込み表示
 

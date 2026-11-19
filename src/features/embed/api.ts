@@ -8,7 +8,8 @@ import {
   parseEmbedTheme,
 } from "@/features/embed/library";
 
-const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+// NOTE: Google への更新は OAuth クライアントのシークレットを持つ auth に任せる
+const EMBED_TOKEN_URL = "https://auth.poetrainy.com/api/embed-token";
 // NOTE: 期限ちょうどに API を呼ぶと失効したトークンで 401 になりうるため、少し手前で更新する
 const EXPIRY_MARGIN_MILLISECONDS = 60 * 1000;
 
@@ -45,15 +46,20 @@ export const getEmbedAccessToken = async (
     return cached.accessToken;
   }
 
-  const response = await fetch(GOOGLE_TOKEN_URL, {
+  const { EMBED_SECRET: secret } = process.env;
+
+  if (!secret) {
+    return null;
+  }
+
+  const response = await fetch(EMBED_TOKEN_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: process.env.AUTH_GOOGLE_ID ?? "",
-      client_secret: process.env.AUTH_GOOGLE_SECRET ?? "",
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-    }),
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ refreshToken }),
+    cache: "no-store",
   }).catch(() => null);
 
   if (!response?.ok) {
@@ -62,20 +68,20 @@ export const getEmbedAccessToken = async (
     return null;
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await response.json().catch(() => null);
 
   if (
     !isRecord(body) ||
-    typeof body.access_token !== "string" ||
-    typeof body.expires_in !== "number"
+    typeof body.accessToken !== "string" ||
+    typeof body.expiresAtSeconds !== "number"
   ) {
     return null;
   }
 
   accessTokenCache.set(refreshToken, {
-    accessToken: body.access_token,
-    expiresAt: Date.now() + body.expires_in * 1000,
+    accessToken: body.accessToken,
+    expiresAt: body.expiresAtSeconds * 1000,
   });
 
-  return body.access_token;
+  return body.accessToken;
 };

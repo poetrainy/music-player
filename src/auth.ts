@@ -1,131 +1,69 @@
-import NextAuth from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import Google from "next-auth/providers/google";
+import { headers } from "next/headers";
+import { cache } from "react";
+import { getToken } from "next-auth/jwt";
 import {
-  getSessionCookie,
-  isAllowedEmail,
-  parseAllowedEmails,
+  getRefreshUrl,
+  getSessionCookieName,
+  getSignInUrl,
+  isTokenExpired,
 } from "@/features/auth/library";
-import { YOUTUBE_AUTH_SCOPE } from "@/service/vendors/youtube/authScope";
 
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-    error?: string;
-    isAllowed?: boolean;
-  }
+export interface Session {
+  user: { name: string; email: string; image: string };
+  accessToken: string;
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    accessToken?: string;
-    refreshToken?: string;
-    expiresAtSeconds?: number;
-    error?: string;
-    isAllowed?: boolean;
+type AuthState =
+  | { status: "authenticated"; session: Session }
+  | { status: "signin" | "refresh" };
+
+// NOTE: セッションは auth が発行した Cookie を読むだけで、このアプリでは発行・更新しない。サインインの可否は auth が Cookie の isAllowed に入れた結果に従い、許可リストはこのアプリでは持たない
+const fetchAuthState = cache(async (): Promise<AuthState> => {
+  const cookieName = getSessionCookieName();
+  const token = await getToken({
+    req: { headers: await headers() },
+    secret: process.env.AUTH_SECRET,
+    cookieName,
+    salt: cookieName,
+  });
+
+  // NOTE: refresh token が失効している場合は更新しても成功しないため、サインインし直してもらう
+  if (
+    !token ||
+    token.isAllowed !== true ||
+    token.isRefreshFailed === true ||
+    typeof token.accessToken !== "string" ||
+    typeof token.email !== "string"
+  ) {
+    return { status: "signin" };
   }
-}
 
-const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-
-interface GoogleRefreshedTokenResponse {
-  access_token: string;
-  expires_in: number;
-  refresh_token?: string;
-}
-
-const refreshAccessToken = async (token: JWT): Promise<JWT> => {
-  try {
-    const response = await fetch(GOOGLE_TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.AUTH_GOOGLE_ID ?? "",
-        client_secret: process.env.AUTH_GOOGLE_SECRET ?? "",
-        grant_type: "refresh_token",
-        refresh_token: token.refreshToken ?? "",
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to refresh access token");
-    }
-
-    const refreshed: unknown = await response.json();
-    const { access_token, expires_in, refresh_token } =
-      refreshed as GoogleRefreshedTokenResponse;
-
-    return {
-      ...token,
-      accessToken: access_token,
-      expiresAtSeconds: Math.floor(Date.now() / 1000) + expires_in,
-      refreshToken: refresh_token ?? token.refreshToken,
-    };
-  } catch {
-    return { ...token, error: "RefreshAccessTokenError" };
+  // NOTE: アクセストークンの更新は auth しか行えないため、期限切れなら auth で更新してから戻ってもらう
+  if (isTokenExpired(token.expiresAtSeconds, new Date())) {
+    return { status: "refresh" };
   }
-};
 
-export const {
-  handlers,
-  auth: authWithoutAllowedCheck,
-  signIn,
-  signOut,
-} = NextAuth({
-  providers: [
-    Google({
-      authorization: {
-        params: {
-          access_type: "offline",
-          prompt: "consent",
-          // NOTE: 音楽サービスの vendor を差し替える場合、OAuth スコープもそのサービスに合わせて変更が必要
-          scope: `openid email profile ${YOUTUBE_AUTH_SCOPE}`,
-        },
+  return {
+    status: "authenticated",
+    session: {
+      user: {
+        name: token.name ?? "",
+        email: token.email,
+        image: token.picture ?? "",
       },
-    }),
-  ],
-  cookies: { sessionToken: getSessionCookie() },
-  callbacks: {
-    signIn: ({ profile }) =>
-      profile?.email_verified === true &&
-      isAllowedEmail(
-        profile.email,
-        parseAllowedEmails(process.env.AUTH_ALLOWED_EMAIL_NAMES),
-      ),
-    jwt: async ({ token, account }) => {
-      if (account) {
-        return {
-          ...token,
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token,
-          expiresAtSeconds: account.expires_at,
-          error: undefined,
-          isAllowed: true,
-        };
-      }
-
-      if (
-        token.expiresAtSeconds &&
-        Date.now() < token.expiresAtSeconds * 1000
-      ) {
-        return token;
-      }
-
-      return refreshAccessToken(token);
+      accessToken: token.accessToken,
     },
-    session: async ({ session, token }) => {
-      session.accessToken = token.accessToken;
-      session.error = token.error;
-      session.isAllowed = token.isAllowed === true;
-
-      return session;
-    },
-  },
+  };
 });
 
-// NOTE: サインインの可否は home が判定して Cookie の isAllowed に入れる。jwt コールバックで null を返すと Cookie ごと削除され、共有している home・recipes のセッションまで消えるため、ここで未サインインとして扱う
-export const auth = async () => {
-  const session = await authWithoutAllowedCheck();
+export const auth = async (): Promise<Session | null> => {
+  const state = await fetchAuthState();
 
-  return session?.isAllowed ? session : null;
+  return state.status === "authenticated" ? state.session : null;
 };
+
+// NOTE: 未サインインなら auth のサインインへ、トークンが期限切れなら auth の更新へ移す
+export const getAuthRedirectUrl = async (): Promise<string> =>
+  (await fetchAuthState()).status === "refresh"
+    ? getRefreshUrl()
+    : getSignInUrl();

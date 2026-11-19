@@ -1,11 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { signOut } from "@/auth";
-import { getHomeSignInUrl } from "@/features/auth/library";
+import { getSignOutUrl } from "@/features/auth/library";
 
 export const logout = async (): Promise<void> => {
-  // NOTE: セッションの Cookie は home・recipes と共有しているため、サインアウトすると全アプリから外れる。callback 付きで home に戻すと自動で再サインインしてしまうため、callback なしの URL に戻す
-  await signOut({ redirect: false });
-  redirect(getHomeSignInUrl(false));
+  // NOTE: セッションの Cookie は全アプリで共有しているため、サインアウトすると全アプリから外れる。確認画面を持つ auth に移す
+  redirect(getSignOutUrl());
 };

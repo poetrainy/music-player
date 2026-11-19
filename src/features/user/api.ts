@@ -14,8 +14,8 @@ export const getCurrentUser = async (): Promise<User> => {
   }
 
   return {
-    name: session?.user?.name ?? "",
-    email: session?.user?.email ?? "",
-    avatarUrl: session?.user?.image ?? "",
+    name: session?.user.name ?? "",
+    email: session?.user.email ?? "",
+    avatarUrl: session?.user.image ?? "",
   };
 };

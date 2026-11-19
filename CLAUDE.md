@@ -212,7 +212,7 @@ function Component() {
 - `app` 配下のページコンポーネント名は `Page` とすること
 - Parallel Routes のスロット（`app/(xx)/@xx/**/page.tsx`）のコンポーネント名は `{Xx}Slot` とすること
   - 例: `app/(admin)/@breadcrumb/**/page.tsx` → `BreadcrumbSlot`
-- ログイン要否によるルートグループは `app/(main)`（ログイン後にアクセスする画面）と `app/(auth)`（サインイン等、未ログインでアクセスする画面）に分けること
+- ログイン要否によるルートグループは `app/(main)`（ログイン後にアクセスする画面）に分けること
 
 ### 命名規則
 

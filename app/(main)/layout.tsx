@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, getAuthRedirectUrl } from "@/auth";
 import { getEmbedSession } from "@/features/embed/api";
 
 export default async function Layout({
@@ -13,7 +13,7 @@ export default async function Layout({
 
   // NOTE: 埋め込み表示ではログイン画面を開けないため、埋め込み用のセッションでも表示を許可する
   if (!session && !isEmbedded) {
-    redirect("/signin");
+    redirect(await getAuthRedirectUrl());
   }
 
   return children;
