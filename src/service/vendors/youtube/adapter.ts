@@ -201,66 +201,11 @@ const toPlaylistSummary = (
 };
 
 const COLLAGE_THUMBNAIL_COUNT = 4;
-// NOTE: 重複判定のために画像を取得する単位。いきなり全曲分を取得せず、
-// 4枚集まるまでこの件数ずつ候補を広げていく
-const COLLAGE_THUMBNAIL_BATCH_SIZE = 10;
-// NOTE: サムネイル画像はvideoIdごとに不変なため、ユーザーを問わずグローバルにキャッシュしてよい
-const THUMBNAIL_HASH_CACHE_SECONDS = 60 * 60 * 24 * 7;
 
-// NOTE: 同じアルバムの曲同士は動画IDが異なってもサムネイル画像（バイト列）が
-// 一致することがあるため、URLではなく画像の中身のハッシュで重複を判定する。
-// small（mqdefault）はlargeより軽量で、同じ元画像から生成されていれば
-// 一致関係はlargeでも変わらないためsmallのみ取得すれば十分
-const hashThumbnailContent = async (url: string): Promise<string> => {
-  const response = await fetch(url, {
-    cache: "force-cache",
-    next: { revalidate: THUMBNAIL_HASH_CACHE_SECONDS },
-  });
-
-  if (!response.ok) {
-    return url;
-  }
-
-  const buffer = await response.arrayBuffer();
-  const digest = await crypto.subtle.digest("SHA-256", buffer);
-
-  return Buffer.from(digest).toString("hex");
-};
-
-const selectCollageSongs = async (
-  songs: PlaylistSong[],
-): Promise<PlaylistSong[]> => {
-  const usedHashes = new Set<string>();
-  const collageSongs: PlaylistSong[] = [];
-
-  for (
-    let offset = 0;
-    offset < songs.length && collageSongs.length < COLLAGE_THUMBNAIL_COUNT;
-    offset += COLLAGE_THUMBNAIL_BATCH_SIZE
-  ) {
-    const batch = songs.slice(offset, offset + COLLAGE_THUMBNAIL_BATCH_SIZE);
-    const hashes = await Promise.all(
-      batch.map((song) => hashThumbnailContent(song.thumbnailUrlSmall)),
-    );
-
-    batch.forEach((song, index) => {
-      if (collageSongs.length >= COLLAGE_THUMBNAIL_COUNT) {
-        return;
-      }
-
-      const hash = hashes[index];
-
-      if (usedHashes.has(hash)) {
-        return;
-      }
-
-      usedHashes.add(hash);
-      collageSongs.push(song);
-    });
-  }
-
-  return collageSongs;
-};
+// NOTE: Workers の Free プランはサブリクエストが1リクエストあたり50回までのため、
+// サムネイル画像の中身を取得して重複を除く処理は行わず、先頭の曲をそのまま使う
+const selectCollageSongs = (songs: PlaylistSong[]): PlaylistSong[] =>
+  songs.slice(0, COLLAGE_THUMBNAIL_COUNT);
 
 const getPlaylistSummaries = async (
   accessToken: string,
@@ -286,7 +231,7 @@ const fetchPlaylists = async (accessToken: string): Promise<Playlist[]> => {
       return {
         ...summary,
         songs,
-        collageSongs: await selectCollageSongs(songs),
+        collageSongs: selectCollageSongs(songs),
       };
     }),
   );
@@ -326,7 +271,7 @@ const fetchPlaylistById = async (
   return {
     ...summary,
     songs,
-    collageSongs: await selectCollageSongs(songs),
+    collageSongs: selectCollageSongs(songs),
   };
 };
 
