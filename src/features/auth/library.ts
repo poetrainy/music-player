@@ -14,7 +14,7 @@ export const isAllowedEmail = (
 ): boolean =>
   typeof email === "string" && allowedEmails.includes(email.toLowerCase());
 
-const DEFAULT_HOME_URL = "https://poetrainy.vercel.app";
+const DEFAULT_HOME_URL = "https://poetrainy.com";
 
 // NOTE: home の /signin?callback=<キー> は、サインイン後にこのアプリへ戻すためのキー。値は home の AUTH_CALLBACK_KEYS.music と同じにする
 export const HOME_CALLBACK_KEY = "krzzl14";
