@@ -128,6 +128,18 @@ bun run start   # 本番ビルドの起動
 bun run lint    # ESLint
 ```
 
+### Cloudflare へのデプロイ
+
+[OpenNext for Cloudflare](https://opennext.js.org/cloudflare)（`@opennextjs/cloudflare`）で Cloudflare Workers にデプロイできます。設定は `wrangler.jsonc` と `open-next.config.ts` にあります。
+
+```bash
+bun run preview   # Workers 環境でローカル確認
+bun run deploy    # ビルドしてデプロイ（事前に `bunx wrangler login` が必要）
+```
+
+- 環境変数は、ローカルでは `.dev.vars`（または `.env.local`）、本番では Cloudflare のダッシュボードまたは `bunx wrangler secret put <名前>` で設定してください。
+- `proxy.ts`（Node.js ランタイムの Proxy）は OpenNext 側で experimental の扱いです。デプロイ後は埋め込み表示と再生先の切り替えを確認してください。
+
 ## ドキュメント
 
 - [機能仕様書](./docs/機能仕様書.md)
