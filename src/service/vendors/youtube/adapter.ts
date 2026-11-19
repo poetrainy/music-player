@@ -276,37 +276,6 @@ const getPlaylistSummaries = async (
     .sort((a, b) => a.title.localeCompare(b.title, "ja"));
 };
 
-// NOTE: 再生の開始に必要なのは最初の曲だけで、残りの曲は再生先が自分で取得するため、先頭の数件だけ取得する
-const PLAYLIST_FIRST_SONG_CANDIDATE_COUNT = 5;
-
-// NOTE: 削除・非公開になった動画は videos.list で返らないため、先頭から順に再生できる曲を探す
-const getPlaylistFirstSong = async (
-  accessToken: string,
-  playlistId: string,
-): Promise<Song | null> => {
-  const data = await fetchApi<gapi.client.youtube.PlaylistItemListResponse>(
-    accessToken,
-    "/playlistItems",
-    {
-      part: "snippet",
-      playlistId,
-      maxResults: String(PLAYLIST_FIRST_SONG_CANDIDATE_COUNT),
-    },
-  );
-  const videoIds = (data.items ?? []).flatMap((item) => {
-    const videoId = item.snippet?.resourceId?.videoId;
-
-    return videoId ? [videoId] : [];
-  });
-  const songs = await getSongsByIds(accessToken, videoIds);
-
-  return (
-    videoIds
-      .map((videoId) => songs.find(({ id }) => id === videoId))
-      .find((song) => !!song) ?? null
-  );
-};
-
 const fetchPlaylists = async (accessToken: string): Promise<Playlist[]> => {
   const summaries = await getPlaylistSummaries(accessToken);
 
@@ -460,6 +429,4 @@ export const youtubeAdapter: ServiceAdapter = {
   deletePlaylistSong,
   getSongsByIds: getSongsByIdsWithAuth,
   searchSongs: searchSongsWithAuth,
-  getPlaylistSummaries,
-  getPlaylistFirstSong,
 };

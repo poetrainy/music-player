@@ -66,12 +66,6 @@ export interface RemotePlaybackState {
   repeatMode: RepeatMode;
 }
 
-export interface RemotePlaybackCommandResult {
-  isDeviceOnline: boolean;
-  // NOTE: 再生先から状態が届かなかった場合は null
-  state: RemotePlaybackState | null;
-}
-
 export interface RemotePlaybackStateMessage {
   deviceId: string;
   state: RemotePlaybackState;
